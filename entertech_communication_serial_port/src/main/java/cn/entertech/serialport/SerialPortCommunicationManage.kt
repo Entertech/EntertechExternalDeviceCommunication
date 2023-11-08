@@ -2,11 +2,8 @@ package cn.entertech.serialport
 
 import android.content.Context
 import cn.entertech.communication.ProcessDataTools
-import cn.entertech.communication.Tools.hexStringToByteArray
 import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
 import cn.entertech.communication.log.ExternalDeviceCommunicateLog
-import com.vi.vioserial.NormalSerial
-import com.vi.vioserial.listener.OnSerialDataListener
 
 object SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
     private var normalSerial: NormalSerial? = null
@@ -28,22 +25,23 @@ object SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
                 connectListeners.forEach {
                     it.invoke()
                 }
-                normalSerial?.setSerialDataListener(object : OnSerialDataListener {
+                normalSerial?.setSerialDataListener(object :
+                    OnSerialDataListener {
                     override fun onSend(hexData: String?) {
                         ExternalDeviceCommunicateLog.d(
                             TAG, "onSend:$hexData"
                         )
                     }
 
-                    override fun onReceive(hexData: String?) {
+                    override fun onReceive(hexData: ByteArray) {
                         ExternalDeviceCommunicateLog.d(
                             TAG,
-                            "onReceive:$hexData"
+                            "onReceive:${hexData.map { it.toInt() and 0xff }}"
                         )
                         if (!(contactListeners.isEmpty() && rawDataListeners.isEmpty() &&
                                     heartRateListeners.isEmpty())
                         ) {
-                            hexData?.toByteArray()?.forEach {
+                            hexData?.forEach {
                                 ProcessDataTools.process(
                                     it, contactListeners,
                                     rawDataListeners,
@@ -88,7 +86,7 @@ object SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
 
     override fun disConnectDevice() {
-        externalDevice?.disConnect()
+        normalSerial?.close()
         disconnectListeners.forEach {
             it("")
         }
@@ -96,10 +94,10 @@ object SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
 
     override fun startHeartAndBrainCollection() {
-        externalDevice?.write(hexStringToByteArray("01"))
+        normalSerial?.sendHex("01")
     }
 
     override fun stopHeartAndBrainCollection() {
-        externalDevice?.write(hexStringToByteArray("02"))
+        normalSerial?.sendHex("02")
     }
 }

@@ -4,8 +4,6 @@ import android.content.Context
 import cn.entertech.communication.api.IExternalDevice
 import cn.entertech.communication.bean.ExternalDeviceType
 import cn.entertech.communication.log.ExternalDeviceCommunicateLog
-import com.vi.vioserial.NormalSerial
-import com.vi.vioserial.listener.OnSerialDataListener
 
 
 class ExternalDeviceSerialPort : IExternalDevice {
@@ -25,7 +23,8 @@ class ExternalDeviceSerialPort : IExternalDevice {
         ExternalDeviceCommunicateLog.d(TAG, "connect result:$result")
         when(result){
             0->{
-                NormalSerial.instance().setSerialDataListener(object :OnSerialDataListener{
+                NormalSerial.instance().setSerialDataListener(object :
+                    OnSerialDataListener {
                     override fun onSend(hexData: String?) {
                         ExternalDeviceCommunicateLog.d(
                             TAG,
@@ -33,12 +32,12 @@ class ExternalDeviceSerialPort : IExternalDevice {
                         )
                     }
 
-                    override fun onReceive(hexData: String?) {
+                    override fun onReceive(hexData: ByteArray) {
                         ExternalDeviceCommunicateLog.d(
                             TAG,
                             "onReceive:$hexData"
                         )
-                        processData(hexData?.toByteArray()?:ByteArray(0))
+                        processData(hexData)
                     }
 
                     override fun onReceiveFullData(hexData: String?) {

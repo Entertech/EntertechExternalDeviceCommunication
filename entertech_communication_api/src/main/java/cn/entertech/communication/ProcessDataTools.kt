@@ -1,6 +1,7 @@
 package cn.entertech.communication
 
 import android.util.Log
+import cn.entertech.communication.log.ExternalDeviceCommunicateLog
 
 /**
  * VR串口数据结构
@@ -161,6 +162,7 @@ object ProcessDataTools {
         }
         if (!start) {
             mask = MASK_DEFAULT
+            ExternalDeviceCommunicateLog.d(TAG, "还未开始，数据无效")
             return
         }
         mask += MASK_STEP
@@ -169,7 +171,7 @@ object ProcessDataTools {
         when (mask) {
             MASK_VR_SERIAL_PORT_DATA_HEAD_END -> {
                 if (byteInt != vrSerialPortDataPckHeadByte) {
-                    Log.d(TAG, "包头校验 出错 byteInt $byteInt is not $vrSerialPortDataPckHeadInt ")
+                    ExternalDeviceCommunicateLog.e(TAG, "包头校验 出错 byteInt $byteInt is not $vrSerialPortDataPckHeadInt ")
                     reset()
                     return
                 }
@@ -197,7 +199,7 @@ object ProcessDataTools {
             MASK_VR_SERIAL_PORT_DATA_CHECK -> {
                 //校验位
                 if (byteInt != vrSerialPortDataPckCheckByte) {
-                    Log.d(TAG, "校验位 出错 byteInt $byteInt is not $vrSerialPortDataPckCheckInt ")
+                    ExternalDeviceCommunicateLog.e(TAG, "校验位 出错 byteInt $byteInt is not $vrSerialPortDataPckCheckInt ")
                     reset()
                     return
                 }
@@ -206,7 +208,7 @@ object ProcessDataTools {
             in MASK_VR_SERIAL_PORT_DATA_TAIL_START..MASK_VR_SERIAL_PORT_DATA_TAIL_END -> {
                 //包尾
                 if (byteInt != vrSerialPortDataPckEndByte) {
-                    Log.d(TAG, "包尾校验 出错 byteInt $byteInt is not $vrSerialPortDataPckEndInt ")
+                    ExternalDeviceCommunicateLog.e(TAG, "包尾校验 出错 byteInt $byteInt is not $vrSerialPortDataPckEndInt ")
                     reset()
                     return
                 }

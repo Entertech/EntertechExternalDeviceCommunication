@@ -1,6 +1,7 @@
 package cn.entertech.device
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.View.OnClickListener
 import android.widget.Button
@@ -10,6 +11,8 @@ import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
 import cn.entertech.communication.api.IExternalDevice
 import cn.entertech.serialport.ExternalDeviceSerialPort
 import cn.entertech.serialport.SerialPortCommunicationManage
+import kotlin.concurrent.thread
+import kotlin.experimental.and
 
 class MainActivity : AppCompatActivity(), OnClickListener {
     private lateinit var connect: Button
@@ -36,7 +39,27 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         startListener.setOnClickListener(this)
         endListener.setOnClickListener(this)
         manage = SerialPortCommunicationManage
+        manage?.connectDevice(this, {
+            Log.d(TAG, "connectDevice success")
+        }) { errorCode, errorMsg ->
+            Log.e(TAG, "errorCode: $errorCode  errorMsg: $errorMsg")
+        }
+        manage?.addRawDataListener {
+            Log.d(TAG, "RawData ${it.map { byte -> byte.toInt() and 0xff }}")
+        }
+        manage?.addContactListener {
+            Log.d(TAG, "Contact it $it")
+        }
 
+        manage?.addHeartRateListener {
+            Log.d(TAG, "hr it $it")
+        }
+        manage?.startHeartAndBrainCollection()
+        thread {
+            Thread.sleep(30000)
+            Log.d(TAG, "stopHeartAndBrainCollection")
+            manage?.stopHeartAndBrainCollection()
+        }
     }
 
     private fun showMsg(msg: String) {
