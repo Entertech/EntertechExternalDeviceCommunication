@@ -1,17 +1,15 @@
 package cn.entertech.device
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.View.OnClickListener
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
 import cn.entertech.communication.api.IExternalDevice
-import cn.entertech.communication.api.IExternalDeviceListener
-import cn.entertech.communication.usb.ExternalDeviceUsb
 import cn.entertech.serialport.ExternalDeviceSerialPort
+import cn.entertech.serialport.SerialPortCommunicationManage
 
 class MainActivity : AppCompatActivity(), OnClickListener {
     private lateinit var connect: Button
@@ -19,7 +17,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
     private lateinit var startListener: Button
     private lateinit var endListener: Button
     private lateinit var tvMsg: TextView
-    private var externalDevice: IExternalDevice? = null
+    private var manage: BaseExternalDeviceCommunicationManage? = null
 
     companion object {
         private const val TAG = "MainActivity"
@@ -37,84 +35,33 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         disconnect.setOnClickListener(this)
         startListener.setOnClickListener(this)
         endListener.setOnClickListener(this)
-        externalDevice = ExternalDeviceSerialPort(this.applicationContext)
-//        externalDevice = ExternalDeviceUsb(this.applicationContext)
-        externalDevice?.setExternalDeviceListener(object : IExternalDeviceListener {
-            override fun connectSuccess() {
-                Log.d(TAG, "connectSuccess")
-                showMsg("connectSuccess")
-            }
+        manage = SerialPortCommunicationManage
 
-            override fun connectFail(msg: String) {
-                Log.d(TAG, "connectFail $msg")
-                showMsg("connectFail $msg")
-            }
-
-            override fun readFail(msg: String) {
-                Log.d(TAG, "readFail $msg")
-                showMsg("readFail $msg")
-            }
-
-            override fun readSuccess(byteArray: ByteArray?) {
-                Log.d(
-                    TAG, "readSuccess byteArray size ${byteArray?.size}" +
-                            " ${byteToInt(byteArray)}"
-                )
-//                Toast.makeText(applicationContext, "onDataReceived size ${byteArray?.size}", Toast.LENGTH_SHORT).show()
-                showMsg("readSuccess byteArray size ${byteArray?.size}" +
-                        " ${byteToInt(byteArray)}")
-            }
-
-            override fun writeFail(msg: String) {
-                Log.d(TAG, "connectSuccess $msg")
-                showMsg("connectSuccess $msg")
-            }
-
-        })
-        externalDevice?.connect()
     }
 
-    private fun showMsg(msg:String){
-        tvMsg.text=(msg)
+    private fun showMsg(msg: String) {
+        tvMsg.text = (msg)
     }
 
     override fun onClick(v: View?) {
         when (v?.id) {
             R.id.connect -> {
-                externalDevice?.connect()
+                manage?.connectDevice(this, {}) { errorCode, errorMsg -> }
             }
 
             R.id.disconnect -> {
-                externalDevice?.disConnect()
+                manage?.disConnectDevice()
             }
 
             R.id.startListener -> {
-                externalDevice?.write(hexStringToByteArray("01"))
+                manage?.startHeartAndBrainCollection()
             }
 
             R.id.endListener -> {
-                externalDevice?.write(hexStringToByteArray("02"))
+                manage?.stopHeartAndBrainCollection()
             }
 
         }
     }
 
-    private fun byteToInt(byteArray: ByteArray?): String {
-        return byteArray?.map {
-            it.toInt()
-        }.toString()
-    }
-
-
-    private fun hexStringToByteArray(hex: String): ByteArray {
-        val len = hex.length
-        val data = ByteArray(len / 2)
-        var i = 0
-        while (i < len) {
-            data[i / 2] = ((((hex[i].digitToIntOrNull(16)
-                ?: (-1 shl 4)) + hex[i + 1].digitToIntOrNull(16)!!) ?: -1)).toByte()
-            i += 2
-        }
-        return data
-    }
 }

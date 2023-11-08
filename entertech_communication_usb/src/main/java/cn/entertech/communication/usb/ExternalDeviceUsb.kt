@@ -7,32 +7,27 @@ import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Build
 import cn.entertech.communication.api.IExternalDevice
-import cn.entertech.communication.api.IExternalDeviceListener
 import cn.entertech.communication.bean.ExternalDeviceType
+import cn.entertech.communication.log.ExternalDeviceCommunicateLog
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
-import com.hoho.android.usbserial.util.SerialInputOutputManager.Listener
 import java.io.IOException
 
-class ExternalDeviceUsb(private val context: Context) : IExternalDevice {
+class ExternalDeviceUsb : IExternalDevice {
     private var usbSerialPort: UsbSerialPort? = null
     private var connected = false
     private var usbIoManager: SerialInputOutputManager? = null
-    private var listener: IExternalDeviceListener? = null
-    private var contactListener: ((Int) -> Unit)? = null
-    private var rawListener: ((ByteArray) -> Unit)? = null
-    private var heartRateListener: ((Int) -> Unit)? = null
 
     companion object {
         private const val READ_WAIT_MILLIS = 2000
         private const val WRITE_WAIT_MILLIS = 2000
-
+        private const val TAG = "ExternalDeviceUsb"
     }
 
     override fun write(byteArray: ByteArray) {
         if (!connected) {
-            listener?.writeFail("not connected")
+            ExternalDeviceCommunicateLog.e(TAG, "write error :not connect")
             return
         }
         try {
@@ -40,54 +35,20 @@ class ExternalDeviceUsb(private val context: Context) : IExternalDevice {
                 byteArray, WRITE_WAIT_MILLIS
             )
         } catch (e: java.lang.Exception) {
-            listener?.writeFail("connection lost: " + e.message)
-            disConnect()
+            ExternalDeviceCommunicateLog.e(TAG, "write error : ${e.message}")
         }
     }
 
-    override fun setExternalDeviceListener(listener: IExternalDeviceListener) {
-        this.listener = listener
-    }
-
-    override fun addConnectListener(listener: (String) -> Unit) {
-
-    }
-
-    override fun removeConnectListener(listener: (String) -> Unit) {
-
-    }
-
-    override fun addRawDataListener(rawListener: (ByteArray) -> Unit) {
-        this.rawListener = rawListener
-    }
-
-    override fun removeRawDataListener(listener: (ByteArray) -> Unit) {
-
-    }
-
-
-    override fun addHeartRateListener(heartRateListener: (Int) -> Unit) {
-        this.heartRateListener = heartRateListener
-    }
-
-    override fun removeHeartRateListener(heartRateListener: (Int) -> Unit) {
-        this.heartRateListener = null
-
-    }
-
-    override fun addContactListener(contactListener: (Int) -> Unit) {
-        this.contactListener = contactListener
-    }
-
-    override fun removeContactListener(contactListener: (Int) -> Unit) {
-
-    }
-
-    override fun connect() {
+    override fun connect(
+        context: Context,
+        connectSuccess: () -> Unit,
+        connectFail: (Int, String) -> Unit,
+        processData: (ByteArray) -> Unit
+    ) {
         var device: UsbDevice? = null
         val usbManager = context.getSystemService(Context.USB_SERVICE) as? UsbManager
         if (usbManager == null) {
-            listener?.connectFail("connection failed: usb manager service not found")
+            connectFail(-1, "connection failed: usb manager service not found")
             return
         }
         for (v in usbManager.deviceList.values) {
@@ -96,16 +57,16 @@ class ExternalDeviceUsb(private val context: Context) : IExternalDevice {
             }
         }
         if (device == null) {
-            listener?.connectFail("connection failed: device not found")
+            connectFail(-1, "connection failed: device not found")
             return
         }
         val driver = UsbSerialProber.getDefaultProber().probeDevice(device)
         if (driver == null) {
-            listener?.connectFail("connection failed: no driver for device")
+            connectFail(-1, "connection failed: no driver for device")
             return
         }
         if (driver.ports.size < 1) {
-            listener?.connectFail("connection failed: not enough ports at device")
+            connectFail(-1, "connection failed: not enough ports at device")
             return
         }
         usbSerialPort = driver.ports[0]
@@ -123,10 +84,11 @@ class ExternalDeviceUsb(private val context: Context) : IExternalDevice {
                     flags
                 )
                 usbManager.requestPermission(driver.device, usbPermissionIntent)
-                listener?.connectFail("connection failed: permission denied")
+                connectFail(-1, "connection failed: permission denied")
                 return
             } else {
-                listener?.connectFail(
+                connectFail(
+                    -1,
                     "connection failed: open failed"
                 )
             }
@@ -138,36 +100,31 @@ class ExternalDeviceUsb(private val context: Context) : IExternalDevice {
             try {
                 usbSerialPort?.setParameters(115200, 8, 1, UsbSerialPort.PARITY_NONE)
             } catch (e: UnsupportedOperationException) {
-                listener?.connectFail("unsupport setparameters")
+                connectFail(-1, "unsupport setparameters")
             }
-            usbIoManager = SerialInputOutputManager(usbSerialPort, object : Listener {
+            connectSuccess()
+            connected = true
+            usbIoManager = SerialInputOutputManager(usbSerialPort, object :
+                SerialInputOutputManager.Listener {
                 override fun onNewData(data: ByteArray?) {
-                    listener?.readSuccess(data)
-                    data?.forEach {
-                        ProcessDataTools.process(
-                            it, contactListener,
-                            rawListener,
-                            heartRateListener
-                        )
-                    }
+                    processData(data ?: ByteArray(0))
                 }
 
                 override fun onRunError(e: java.lang.Exception?) {
-                    listener?.readFail("e message : ${e?.message}")
+                    ExternalDeviceCommunicateLog.e(TAG, "onRunError : ${e?.message}")
                 }
             })
             usbIoManager?.start()
-            listener?.connectSuccess()
-            connected = true
+
         } catch (e: Exception) {
-            listener?.connectFail("connection failed: " + e.message)
+            connectFail(-1, "connection failed: " + e.message)
             disConnect()
         }
     }
 
     override fun read(byteArray: ByteArray): Int {
         if (!connected) {
-            listener?.connectFail("not connected")
+            ExternalDeviceCommunicateLog.e(TAG, "read error :not connect")
             return -1
         }
         return try {
@@ -175,22 +132,15 @@ class ExternalDeviceUsb(private val context: Context) : IExternalDevice {
                 byteArray,
                 READ_WAIT_MILLIS
             ) ?: -1
+
         } catch (e: IOException) {
             // when using read with timeout, USB bulkTransfer returns -1 on timeout _and_ errors
             // like connection loss, so there is typically no exception thrown here on error
-            listener?.connectFail("connection lost: " + e.message)
-            disConnect()
+            ExternalDeviceCommunicateLog.e(TAG, "read error : ${e.message}")
             -1
         }
     }
 
-    override fun startHeartAndBrainCollection() {
-        write(hexStringToByteArray("01"))
-    }
-
-    override fun stopHeartAndBrainCollection() {
-        write(hexStringToByteArray("02"))
-    }
 
     override fun disConnect() {
         connected = false
@@ -206,15 +156,4 @@ class ExternalDeviceUsb(private val context: Context) : IExternalDevice {
 
     override fun getExternalDeviceType() = ExternalDeviceType.USB
 
-    private fun hexStringToByteArray(hex: String): ByteArray {
-        val len = hex.length
-        val data = ByteArray(len / 2)
-        var i = 0
-        while (i < len) {
-            data[i / 2] = ((((hex[i].digitToIntOrNull(16)
-                ?: (-1 shl 4)) + hex[i + 1].digitToIntOrNull(16)!!) ?: -1)).toByte()
-            i += 2
-        }
-        return data
-    }
 }

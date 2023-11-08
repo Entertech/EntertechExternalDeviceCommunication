@@ -1,4 +1,4 @@
-package cn.entertech.communication.usb
+package cn.entertech.communication
 
 import android.util.Log
 
@@ -112,7 +112,7 @@ object ProcessDataTools {
      * 数据位末尾
      * */
     private const val MASK_VR_SERIAL_PORT_DATA_END =
-        MASK_VR_SERIAL_PORT_DATA_START + 2 + (DATA_COUNT-1) * 3
+        MASK_VR_SERIAL_PORT_DATA_START + 2 + (DATA_COUNT - 1) * 3
 
     /**
      * 校验位
@@ -133,7 +133,7 @@ object ProcessDataTools {
     private var mask = MASK_DEFAULT
 
 
-    private var data = ByteArray(DATA_COUNT*3)
+    private var data = ByteArray(DATA_COUNT * 3)
 
     /**
      * 先检验前3个是否是包头 3
@@ -148,9 +148,9 @@ object ProcessDataTools {
      * */
     fun process(
         byteInt: Byte,
-        contactListener: ((Int) -> Unit)?,
-        rawListener: ((ByteArray) -> Unit)?,
-        heartRateListener: ((Int) -> Unit)?
+        contactListeners: List<((Int) -> Unit)?>,
+        rawListeners: List<((ByteArray) -> Unit)?>,
+        heartRateListeners: List<((Int) -> Unit)>?
     ) {
         if (byteInt == vrSerialPortDataPckHeadByte) {
             if (!start) {
@@ -177,12 +177,16 @@ object ProcessDataTools {
 
             MASK_VR_SERIAL_PORT_DATA_HR -> {
                 //心率数据
-                heartRateListener?.invoke(byteInt.toInt())
+                heartRateListeners?.forEach {
+                    it.invoke(byteInt.toInt())
+                }
             }
 
             MASK_VR_SERIAL_PORT_DATA_CHECK_CONTACT -> {
                 //脱落检测数据 0为佩戴正常，非0为脱落
-                contactListener?.invoke(byteInt.toInt())
+                contactListeners?.forEach {
+                    it?.invoke(byteInt.toInt())
+                }
             }
 
             in MASK_VR_SERIAL_PORT_DATA_START..MASK_VR_SERIAL_PORT_DATA_END -> {
@@ -207,7 +211,9 @@ object ProcessDataTools {
                     return
                 }
                 if (mask == MASK_VR_SERIAL_PORT_DATA_TAIL_END) {
-                    rawListener?.invoke(data)
+                    rawListeners.forEach {
+                        it?.invoke(data)
+                    }
                     reset()
                 }
             }
@@ -215,7 +221,7 @@ object ProcessDataTools {
     }
 
     private fun reset() {
-        data = ByteArray(DATA_COUNT*3)
+        data = ByteArray(DATA_COUNT * 3)
         start = false
         mask = MASK_DEFAULT
     }
