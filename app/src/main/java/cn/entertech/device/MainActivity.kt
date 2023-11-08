@@ -5,16 +5,20 @@ import android.util.Log
 import android.view.View
 import android.view.View.OnClickListener
 import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import cn.entertech.communication.api.IExternalDevice
 import cn.entertech.communication.api.IExternalDeviceListener
 import cn.entertech.communication.usb.ExternalDeviceUsb
+import cn.entertech.serialport.ExternalDeviceSerialPort
 
 class MainActivity : AppCompatActivity(), OnClickListener {
     private lateinit var connect: Button
     private lateinit var disconnect: Button
     private lateinit var startListener: Button
     private lateinit var endListener: Button
+    private lateinit var tvMsg: TextView
     private var externalDevice: IExternalDevice? = null
 
     companion object {
@@ -28,22 +32,27 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         disconnect = findViewById(R.id.disconnect)
         startListener = findViewById(R.id.startListener)
         endListener = findViewById(R.id.endListener)
+        tvMsg = findViewById(R.id.tvMsg)
         connect.setOnClickListener(this)
         disconnect.setOnClickListener(this)
         startListener.setOnClickListener(this)
         endListener.setOnClickListener(this)
-        externalDevice = ExternalDeviceUsb()
+        externalDevice = ExternalDeviceSerialPort(this.applicationContext)
+//        externalDevice = ExternalDeviceUsb(this.applicationContext)
         externalDevice?.setExternalDeviceListener(object : IExternalDeviceListener {
             override fun connectSuccess() {
                 Log.d(TAG, "connectSuccess")
+                showMsg("connectSuccess")
             }
 
             override fun connectFail(msg: String) {
                 Log.d(TAG, "connectFail $msg")
+                showMsg("connectFail $msg")
             }
 
             override fun readFail(msg: String) {
                 Log.d(TAG, "readFail $msg")
+                showMsg("readFail $msg")
             }
 
             override fun readSuccess(byteArray: ByteArray?) {
@@ -51,19 +60,28 @@ class MainActivity : AppCompatActivity(), OnClickListener {
                     TAG, "readSuccess byteArray size ${byteArray?.size}" +
                             " ${byteToInt(byteArray)}"
                 )
+//                Toast.makeText(applicationContext, "onDataReceived size ${byteArray?.size}", Toast.LENGTH_SHORT).show()
+                showMsg("readSuccess byteArray size ${byteArray?.size}" +
+                        " ${byteToInt(byteArray)}")
             }
 
             override fun writeFail(msg: String) {
                 Log.d(TAG, "connectSuccess $msg")
+                showMsg("connectSuccess $msg")
             }
 
         })
+        externalDevice?.connect()
+    }
+
+    private fun showMsg(msg:String){
+        tvMsg.text=(msg)
     }
 
     override fun onClick(v: View?) {
         when (v?.id) {
             R.id.connect -> {
-                externalDevice?.connect(this)
+                externalDevice?.connect()
             }
 
             R.id.disconnect -> {
