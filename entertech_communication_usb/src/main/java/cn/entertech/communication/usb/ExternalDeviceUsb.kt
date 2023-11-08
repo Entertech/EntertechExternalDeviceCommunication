@@ -8,13 +8,14 @@ import android.hardware.usb.UsbManager
 import android.os.Build
 import cn.entertech.communication.api.IExternalDevice
 import cn.entertech.communication.api.IExternalDeviceListener
+import cn.entertech.communication.bean.ExternalDeviceType
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
 import com.hoho.android.usbserial.util.SerialInputOutputManager.Listener
 import java.io.IOException
 
-class ExternalDeviceUsb : IExternalDevice {
+class ExternalDeviceUsb(private val context: Context) : IExternalDevice {
     private var usbSerialPort: UsbSerialPort? = null
     private var connected = false
     private var usbIoManager: SerialInputOutputManager? = null
@@ -25,7 +26,7 @@ class ExternalDeviceUsb : IExternalDevice {
 
     companion object {
         private const val READ_WAIT_MILLIS = 2000
-        private val WRITE_WAIT_MILLIS = 2000
+        private const val WRITE_WAIT_MILLIS = 2000
 
     }
 
@@ -53,23 +54,42 @@ class ExternalDeviceUsb : IExternalDevice {
     }
 
     override fun removeConnectListener(listener: (String) -> Unit) {
+
     }
 
     override fun addRawDataListener(rawListener: (ByteArray) -> Unit) {
         this.rawListener = rawListener
     }
 
+    override fun removeRawDataListener(listener: (ByteArray) -> Unit) {
+
+    }
+
+
     override fun addHeartRateListener(heartRateListener: (Int) -> Unit) {
         this.heartRateListener = heartRateListener
+    }
+
+    override fun removeHeartRateListener(heartRateListener: (Int) -> Unit) {
+        this.heartRateListener = null
+
     }
 
     override fun addContactListener(contactListener: (Int) -> Unit) {
         this.contactListener = contactListener
     }
 
-    override fun connect(context: Context) {
+    override fun removeContactListener(contactListener: (Int) -> Unit) {
+
+    }
+
+    override fun connect() {
         var device: UsbDevice? = null
-        val usbManager = context.getSystemService(Context.USB_SERVICE) as? UsbManager ?: return
+        val usbManager = context.getSystemService(Context.USB_SERVICE) as? UsbManager
+        if (usbManager == null) {
+            listener?.connectFail("connection failed: usb manager service not found")
+            return
+        }
         for (v in usbManager.deviceList.values) {
             if (v.vendorId == UsbId.VENDOR_ID && v.productId == UsbId.PRODUCT_ID) {
                 device = v
@@ -151,10 +171,10 @@ class ExternalDeviceUsb : IExternalDevice {
             return -1
         }
         return try {
-            usbSerialPort!!.read(
+            usbSerialPort?.read(
                 byteArray,
                 READ_WAIT_MILLIS
-            )
+            ) ?: -1
         } catch (e: IOException) {
             // when using read with timeout, USB bulkTransfer returns -1 on timeout _and_ errors
             // like connection loss, so there is typically no exception thrown here on error
@@ -184,6 +204,7 @@ class ExternalDeviceUsb : IExternalDevice {
         usbSerialPort = null
     }
 
+    override fun getExternalDeviceType() = ExternalDeviceType.USB
 
     private fun hexStringToByteArray(hex: String): ByteArray {
         val len = hex.length
