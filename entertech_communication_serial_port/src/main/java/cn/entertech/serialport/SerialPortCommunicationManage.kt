@@ -3,11 +3,17 @@ package cn.entertech.serialport
 import android.content.Context
 import cn.entertech.communication.ProcessDataTools
 import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
+import cn.entertech.communication.bean.ExternalDeviceType
 import cn.entertech.communication.log.ExternalDeviceCommunicateLog
+//import com.google.auto.service.AutoService
 
+//@AutoService(BaseExternalDeviceCommunicationManage::class)
 object SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
     private var normalSerial: NormalSerial? = null
     private const val TAG = "SerialPortCommunicationManage"
+    private val bytes by lazy {
+        ArrayList<String>()
+    }
     override fun connectDevice(
         context: Context,
         connectSuccess: () -> Unit,
@@ -34,6 +40,9 @@ object SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
                     }
 
                     override fun onReceive(hexData: ByteArray) {
+                        /*hexData.forEach {
+                            bytes.add(String.format("%02x", it.toInt() and 0xff))
+                        }*/
                         ExternalDeviceCommunicateLog.d(
                             TAG,
                             "onReceive:${hexData.map { it.toInt() and 0xff }}"
@@ -99,5 +108,9 @@ object SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
     override fun stopHeartAndBrainCollection() {
         normalSerial?.sendHex("02")
+//        ExternalDeviceCommunicateLog.d(TAG, "byte: $bytes")
+
     }
+
+    override fun getType()= ExternalDeviceType.SERIAL_PORT
 }

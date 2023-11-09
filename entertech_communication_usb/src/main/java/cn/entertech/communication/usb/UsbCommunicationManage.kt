@@ -4,6 +4,7 @@ import android.content.Context
 import cn.entertech.communication.ProcessDataTools
 import cn.entertech.communication.Tools.hexStringToByteArray
 import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
+import cn.entertech.communication.bean.ExternalDeviceType
 
 object UsbCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
@@ -44,5 +45,9 @@ object UsbCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
     override fun stopHeartAndBrainCollection() {
         externalDevice?.write(hexStringToByteArray("02"))
+    }
+
+    override fun getType(): ExternalDeviceType {
+        return externalDevice?.getExternalDeviceType()?: ExternalDeviceType.USB
     }
 }

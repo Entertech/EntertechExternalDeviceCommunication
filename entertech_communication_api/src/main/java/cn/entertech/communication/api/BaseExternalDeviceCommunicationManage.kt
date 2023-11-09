@@ -1,9 +1,25 @@
 package cn.entertech.communication.api
 
 import android.content.Context
+import cn.entertech.communication.bean.ExternalDeviceType
+//import java.util.ServiceLoader
 import java.util.concurrent.CopyOnWriteArrayList
 
 abstract class BaseExternalDeviceCommunicationManage {
+
+   /* companion object {
+        fun getManage(type: ExternalDeviceType): BaseExternalDeviceCommunicationManage? {
+            ServiceLoader.load(BaseExternalDeviceCommunicationManage::class.java)
+                .forEach {
+                    if (it.getType() == type) {
+                        return it
+                    }
+                }
+            return null
+        }
+    }*/
+
+
     protected var externalDevice: IExternalDevice? = null
     private var isConnected = false
     protected val rawDataListeners = CopyOnWriteArrayList<(ByteArray) -> Unit>()
@@ -161,4 +177,6 @@ abstract class BaseExternalDeviceCommunicationManage {
      * 停止脑波和心率数据采集
      * */
     abstract fun stopHeartAndBrainCollection()
+
+    abstract fun getType(): ExternalDeviceType
 }
