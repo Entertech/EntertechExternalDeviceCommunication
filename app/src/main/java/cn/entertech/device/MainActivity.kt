@@ -8,12 +8,7 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
-import cn.entertech.communication.api.IExternalDevice
 import cn.entertech.communication.bean.ExternalDeviceType
-import cn.entertech.serialport.ExternalDeviceSerialPort
-import cn.entertech.serialport.SerialPortCommunicationManage
-import kotlin.concurrent.thread
-import kotlin.experimental.and
 
 class MainActivity : AppCompatActivity(), OnClickListener {
     private lateinit var connect: Button

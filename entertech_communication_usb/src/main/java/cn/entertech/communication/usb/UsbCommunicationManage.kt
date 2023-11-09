@@ -8,7 +8,7 @@ import cn.entertech.communication.bean.ExternalDeviceType
 import com.google.auto.service.AutoService
 
 @AutoService(BaseExternalDeviceCommunicationManage::class)
-object UsbCommunicationManage : BaseExternalDeviceCommunicationManage() {
+class UsbCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
     override fun connectDevice(
         context: Context,
