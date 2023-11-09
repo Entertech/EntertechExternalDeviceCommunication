@@ -1,10 +1,11 @@
 # 详细API说明
 
-### 外设-串口管理类
+### 外设管理类
 
 **方法说明**
 
-该类集成了外设-串口的所有操作
+该类集成了外设的所有操作，实例是使用串口，目前仅支持串口类型
+串口：ExternalDeviceType.SERIAL_PORT
 
 **示例代码**
 
@@ -16,7 +17,7 @@ val manage = BaseExternalDeviceCommunicationManage.getManage(ExternalDeviceType.
 
 **方法说明**
 
-连接串口设备
+连接设备
 
 **示例代码**
 
