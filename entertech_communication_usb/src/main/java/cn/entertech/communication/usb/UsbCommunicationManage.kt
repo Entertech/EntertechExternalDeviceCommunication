@@ -5,7 +5,9 @@ import cn.entertech.communication.ProcessDataTools
 import cn.entertech.communication.Tools.hexStringToByteArray
 import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
 import cn.entertech.communication.bean.ExternalDeviceType
+import com.google.auto.service.AutoService
 
+@AutoService(BaseExternalDeviceCommunicationManage::class)
 object UsbCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
     override fun connectDevice(
@@ -48,6 +50,6 @@ object UsbCommunicationManage : BaseExternalDeviceCommunicationManage() {
     }
 
     override fun getType(): ExternalDeviceType {
-        return externalDevice?.getExternalDeviceType()?: ExternalDeviceType.USB
+        return externalDevice?.getExternalDeviceType() ?: ExternalDeviceType.USB
     }
 }

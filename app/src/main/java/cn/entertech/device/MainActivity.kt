@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
 import cn.entertech.communication.api.IExternalDevice
+import cn.entertech.communication.bean.ExternalDeviceType
 import cn.entertech.serialport.ExternalDeviceSerialPort
 import cn.entertech.serialport.SerialPortCommunicationManage
 import kotlin.concurrent.thread
@@ -38,7 +39,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         disconnect.setOnClickListener(this)
         startListener.setOnClickListener(this)
         endListener.setOnClickListener(this)
-        manage = SerialPortCommunicationManage
+        manage = BaseExternalDeviceCommunicationManage.getManage(ExternalDeviceType.SERIAL_PORT)
         manage?.connectDevice(this, {
             Log.d(TAG, "connectDevice success")
         }) { errorCode, errorMsg ->
@@ -55,11 +56,11 @@ class MainActivity : AppCompatActivity(), OnClickListener {
             Log.d(TAG, "hr it $it")
         }
         manage?.startHeartAndBrainCollection()
-        thread {
-            Thread.sleep(30000)
-            Log.d(TAG, "stopHeartAndBrainCollection")
-            manage?.stopHeartAndBrainCollection()
-        }
+//        thread {
+//            Thread.sleep(30000)
+//            Log.d(TAG, "stopHeartAndBrainCollection")
+//            manage?.stopHeartAndBrainCollection()
+//        }
     }
 
     private fun showMsg(msg: String) {
@@ -69,7 +70,11 @@ class MainActivity : AppCompatActivity(), OnClickListener {
     override fun onClick(v: View?) {
         when (v?.id) {
             R.id.connect -> {
-                manage?.connectDevice(this, {}) { errorCode, errorMsg -> }
+                manage?.connectDevice(this, {
+                    Log.d(TAG, "connectDevice success")
+                }) { errorCode, errorMsg ->
+                    Log.e(TAG, "errorCode: $errorCode  errorMsg: $errorMsg")
+                }
             }
 
             R.id.disconnect -> {
@@ -87,4 +92,9 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         }
     }
 
+    override fun onDestroy() {
+        manage?.disConnectDevice()
+        super.onDestroy()
+
+    }
 }

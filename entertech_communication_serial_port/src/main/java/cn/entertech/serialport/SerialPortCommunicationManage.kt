@@ -1,19 +1,51 @@
 package cn.entertech.serialport
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import cn.entertech.communication.ProcessDataTools
 import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
 import cn.entertech.communication.bean.ExternalDeviceType
 import cn.entertech.communication.log.ExternalDeviceCommunicateLog
-//import com.google.auto.service.AutoService
+import java.util.concurrent.CopyOnWriteArrayList
 
-//@AutoService(BaseExternalDeviceCommunicationManage::class)
+import com.google.auto.service.AutoService
+
+@AutoService(BaseExternalDeviceCommunicationManage::class)
 object SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
     private var normalSerial: NormalSerial? = null
     private const val TAG = "SerialPortCommunicationManage"
     private val bytes by lazy {
-        ArrayList<String>()
+        CopyOnWriteArrayList<String>()
     }
+    private val mHandler by lazy {
+        object : Handler(Looper.getMainLooper()) {
+            override fun handleMessage(msg: Message) {
+                super.handleMessage(msg)
+                val hexData = msg.obj as ByteArray
+                ExternalDeviceCommunicateLog.d(
+                    TAG,
+                    "onReceive:${hexData.map { it.toInt() and 0xff }}"
+                )
+                if (!(contactListeners.isEmpty() && rawDataListeners.isEmpty() &&
+                            heartRateListeners.isEmpty())
+                ) {
+
+                    hexData?.forEach {
+                        bytes.add((it.toInt() and 0xff).toString())
+                        ProcessDataTools.process(
+                            it, contactListeners,
+                            rawDataListeners,
+                            heartRateListeners
+                        )
+                    }
+                }
+            }
+        }
+
+    }
+
     override fun connectDevice(
         context: Context,
         connectSuccess: () -> Unit,
@@ -40,24 +72,13 @@ object SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
                     }
 
                     override fun onReceive(hexData: ByteArray) {
-                        /*hexData.forEach {
-                            bytes.add(String.format("%02x", it.toInt() and 0xff))
-                        }*/
-                        ExternalDeviceCommunicateLog.d(
-                            TAG,
-                            "onReceive:${hexData.map { it.toInt() and 0xff }}"
-                        )
-                        if (!(contactListeners.isEmpty() && rawDataListeners.isEmpty() &&
-                                    heartRateListeners.isEmpty())
-                        ) {
-                            hexData?.forEach {
-                                ProcessDataTools.process(
-                                    it, contactListeners,
-                                    rawDataListeners,
-                                    heartRateListeners
-                                )
-                            }
+                        hexData.forEach {
+                            bytes.add((it.toInt() and 0xff).toString())
                         }
+
+                        val mes=Message.obtain()
+                        mes.obj=hexData
+                        mHandler.sendMessage(mes)
                     }
 
                     override fun onReceiveFullData(hexData: String?) {
@@ -107,10 +128,9 @@ object SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
     }
 
     override fun stopHeartAndBrainCollection() {
+        ExternalDeviceCommunicateLog.d(TAG, "byte: $bytes")
         normalSerial?.sendHex("02")
-//        ExternalDeviceCommunicateLog.d(TAG, "byte: $bytes")
-
     }
 
-    override fun getType()= ExternalDeviceType.SERIAL_PORT
+    override fun getType() = ExternalDeviceType.SERIAL_PORT
 }
