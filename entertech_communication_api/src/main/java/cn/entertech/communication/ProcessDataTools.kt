@@ -146,6 +146,7 @@ object ProcessDataTools {
      * 3个包尾位 3
      *
      * 在当前方法帧中，byteInt所在的位置要早与mask标记的位置，也就是byteInt先入帧，然后mask被赋予byteInt所在的位置
+     * 目前设定：心率&脱落标志与整体数据结构无关
      * */
     fun process(
         byteInt: Byte,
