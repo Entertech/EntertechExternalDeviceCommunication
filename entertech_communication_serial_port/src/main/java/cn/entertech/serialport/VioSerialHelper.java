@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
+import java.util.Arrays;
 
 import cn.entertech.communication.log.ExternalDeviceCommunicateLog;
 
@@ -142,31 +143,32 @@ public abstract class VioSerialHelper {
             super.run();
             while (!isInterrupted()) {
                 try {
-                    if (mInputStream == null) return;
-                    byte[] buffer =new byte[1024];
-                    int im = mInputStream.available();
-                    if (im > 0) {
-                        int size = mInputStream.read(buffer);
-                        ExternalDeviceCommunicateLog.INSTANCE.d("VioSerialHelper", "im: $im " + im + " size: size " + size);
-                        String hexString = SerialDataUtils.ByteArrToHex(buffer).trim();
-                        final byte[] newData = new byte[size];
-                        System.arraycopy(buffer, 0, newData, 0, size);
-                        if (mSerialDataListener != null) {
-                            mSerialDataListener.onReceive(newData);
-                        }
-                        parseData(hexString);
-                    } else {
-                        parseData(TAG_END);
-                    }
-
-                    try {
+                   /* try {
                         Thread.sleep(iGap);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
-                    }
+                    }*/
+                    if (mInputStream == null) return;
+                    byte[] buffer =new byte[1024];
+//                    int im = mInputStream.available();
+//                    if (im > 0) {
+                        int size = mInputStream.read(buffer);
+                        ExternalDeviceCommunicateLog.INSTANCE.d("VioSerialHelper", "im: $im "  + " size: size " + size);
+//                        String hexString = SerialDataUtils.ByteArrToHex(buffer).trim();
+                        final byte[] newData = new byte[size];
+                        System.arraycopy(buffer, 0, newData, 0, size);
+//                        ExternalDeviceCommunicateLog.INSTANCE.d(TAG, "newData: "+Arrays.toString(newData));
+                        if (mSerialDataListener != null) {
+                            mSerialDataListener.onReceive(newData);
+                        }
+//                        parseData(hexString);
+//                    } else {
+//                        parseData(TAG_END);
+//                    }
+
+
                 } catch (Throwable e) {
                     e.printStackTrace();
-                    return;
                 }
             }
         }
