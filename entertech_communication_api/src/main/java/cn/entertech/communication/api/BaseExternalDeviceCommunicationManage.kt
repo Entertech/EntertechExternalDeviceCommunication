@@ -2,12 +2,13 @@ package cn.entertech.communication.api
 
 import android.content.Context
 import cn.entertech.communication.bean.ExternalDeviceType
+import java.util.ServiceLoader
 //import java.util.ServiceLoader
 import java.util.concurrent.CopyOnWriteArrayList
 
 abstract class BaseExternalDeviceCommunicationManage {
 
-   /* companion object {
+    companion object {
         fun getManage(type: ExternalDeviceType): BaseExternalDeviceCommunicationManage? {
             ServiceLoader.load(BaseExternalDeviceCommunicationManage::class.java)
                 .forEach {
@@ -17,7 +18,7 @@ abstract class BaseExternalDeviceCommunicationManage {
                 }
             return null
         }
-    }*/
+    }
 
 
     protected var externalDevice: IExternalDevice? = null
