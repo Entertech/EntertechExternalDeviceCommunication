@@ -14,8 +14,8 @@ class ExternalDeviceSerialPort : IExternalDevice {
 
     override fun connect(
         context: Context,
-        connectSuccess: () -> Unit,
-        connectFail: (Int, String) -> Unit,
+        connectSuccess: (() -> Unit)?,
+        connectFail: ((Int, String) -> Unit)?,
         processData: (ByteArray) -> Unit
     ) {
         val result = NormalSerial.instance()

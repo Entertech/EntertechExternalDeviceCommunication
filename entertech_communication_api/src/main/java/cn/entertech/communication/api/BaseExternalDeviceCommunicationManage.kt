@@ -33,14 +33,17 @@ abstract class BaseExternalDeviceCommunicationManage {
     protected val connectListeners = CopyOnWriteArrayList<() -> Unit>()
     protected val disconnectListeners = CopyOnWriteArrayList<(String) -> Unit>()
 
+    open fun initDevice(context: Context){
+
+    }
 
     /**
      * 连接设备
      * */
     abstract fun connectDevice(
         context: Context,
-        connectSuccess: () -> Unit,
-        connectFail: (Int, String) -> Unit
+        connectSuccess: (() -> Unit)?,
+        connectFail: ((Int, String) -> Unit)?
     )
 
     fun addConnectListener(listener: () -> Unit) {

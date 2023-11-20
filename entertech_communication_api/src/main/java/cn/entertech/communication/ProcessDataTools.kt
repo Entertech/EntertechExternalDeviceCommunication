@@ -151,7 +151,8 @@ object ProcessDataTools {
         byteInt: Byte,
         contactListeners: List<((Int) -> Unit)?>,
         bioAndAffectDataListeners: List<((ByteArray) -> Unit)?>,
-        heartRateListeners: List<((Int) -> Unit)>?
+        heartRateListeners: List<((Int) -> Unit)>?,
+        finish: (() -> Unit)? = null
     ) {
         if (byteInt == vrSerialPortDataPckHeadByte) {
             if (!start) {
@@ -171,7 +172,10 @@ object ProcessDataTools {
         when (mask) {
             MASK_VR_SERIAL_PORT_DATA_HEAD_END -> {
                 if (byteInt != vrSerialPortDataPckHeadByte) {
-                    ExternalDeviceCommunicateLog.e(TAG, "包头校验 出错 byteInt $byteInt is not $vrSerialPortDataPckHeadInt ")
+                    ExternalDeviceCommunicateLog.e(
+                        TAG,
+                        "包头校验 出错 byteInt $byteInt is not $vrSerialPortDataPckHeadInt "
+                    )
                     reset()
                     return
                 }
@@ -199,7 +203,10 @@ object ProcessDataTools {
             MASK_VR_SERIAL_PORT_DATA_CHECK -> {
                 //校验位
                 if (byteInt != vrSerialPortDataPckCheckByte) {
-                    ExternalDeviceCommunicateLog.e(TAG, "校验位 出错 byteInt $byteInt is not $vrSerialPortDataPckCheckInt ")
+                    ExternalDeviceCommunicateLog.e(
+                        TAG,
+                        "校验位 出错 byteInt $byteInt is not $vrSerialPortDataPckCheckInt "
+                    )
                     reset()
                     return
                 }
@@ -208,11 +215,15 @@ object ProcessDataTools {
             in MASK_VR_SERIAL_PORT_DATA_TAIL_START..MASK_VR_SERIAL_PORT_DATA_TAIL_END -> {
                 //包尾
                 if (byteInt != vrSerialPortDataPckEndByte) {
-                    ExternalDeviceCommunicateLog.e(TAG, "包尾校验 出错 byteInt $byteInt is not $vrSerialPortDataPckEndInt ")
+                    ExternalDeviceCommunicateLog.e(
+                        TAG,
+                        "包尾校验 出错 byteInt $byteInt is not $vrSerialPortDataPckEndInt "
+                    )
                     reset()
                     return
                 }
                 if (mask == MASK_VR_SERIAL_PORT_DATA_TAIL_END) {
+                    finish?.invoke()
                     bioAndAffectDataListeners.forEach {
                         it?.invoke(data)
                     }

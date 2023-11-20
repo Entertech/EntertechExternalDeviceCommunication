@@ -5,6 +5,8 @@ import android.text.TextUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.entertech.communication.log.ExternalDeviceCommunicateLog;
+
 /**
  * @author Vi
  * @date 2019-07-17 17:49
@@ -104,7 +106,7 @@ public class NormalSerial {
         if (mBaseSerial != null) {
             mBaseSerial.setSerialDataListener(dataListener);
         } else {
-            Logger.getInstace().e(TAG, "The serial port is closed or not initialized");
+            ExternalDeviceCommunicateLog.INSTANCE.e(TAG, "The serial port is closed or not initialized");
             //throw new IllegalArgumentException("The serial port is closed or not initialized");
         }
     }
@@ -133,7 +135,7 @@ public class NormalSerial {
             mBaseSerial.close();
             mBaseSerial = null;
         } else {
-            Logger.getInstace().e(TAG, "The serial port is closed or not initialized");
+            ExternalDeviceCommunicateLog.INSTANCE.e(TAG, "The serial port is closed or not initialized");
             //throw new IllegalArgumentException("The serial port is closed or not initialized");
         }
     }

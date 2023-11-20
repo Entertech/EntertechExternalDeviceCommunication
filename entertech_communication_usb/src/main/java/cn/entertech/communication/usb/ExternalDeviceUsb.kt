@@ -41,14 +41,14 @@ class ExternalDeviceUsb : IExternalDevice {
 
     override fun connect(
         context: Context,
-        connectSuccess: () -> Unit,
-        connectFail: (Int, String) -> Unit,
+        connectSuccess: (() -> Unit)?,
+        connectFail: ((Int, String) -> Unit)?,
         processData: (ByteArray) -> Unit
     ) {
         var device: UsbDevice? = null
         val usbManager = context.getSystemService(Context.USB_SERVICE) as? UsbManager
         if (usbManager == null) {
-            connectFail(-1, "connection failed: usb manager service not found")
+            connectFail?.invoke(-1, "connection failed: usb manager service not found")
             return
         }
         for (v in usbManager.deviceList.values) {
@@ -57,16 +57,16 @@ class ExternalDeviceUsb : IExternalDevice {
             }
         }
         if (device == null) {
-            connectFail(-1, "connection failed: device not found")
+            connectFail?.invoke(-1, "connection failed: device not found")
             return
         }
         val driver = UsbSerialProber.getDefaultProber().probeDevice(device)
         if (driver == null) {
-            connectFail(-1, "connection failed: no driver for device")
+            connectFail?.invoke(-1, "connection failed: no driver for device")
             return
         }
         if (driver.ports.size < 1) {
-            connectFail(-1, "connection failed: not enough ports at device")
+            connectFail?.invoke(-1, "connection failed: not enough ports at device")
             return
         }
         usbSerialPort = driver.ports[0]
@@ -84,10 +84,10 @@ class ExternalDeviceUsb : IExternalDevice {
                     flags
                 )
                 usbManager.requestPermission(driver.device, usbPermissionIntent)
-                connectFail(-1, "connection failed: permission denied")
+                connectFail?.invoke(-1, "connection failed: permission denied")
                 return
             } else {
-                connectFail(
+                connectFail?.invoke(
                     -1,
                     "connection failed: open failed"
                 )
@@ -100,9 +100,9 @@ class ExternalDeviceUsb : IExternalDevice {
             try {
                 usbSerialPort?.setParameters(115200, 8, 1, UsbSerialPort.PARITY_NONE)
             } catch (e: UnsupportedOperationException) {
-                connectFail(-1, "unsupport setparameters")
+                connectFail?.invoke(-1, "unsupport setparameters")
             }
-            connectSuccess()
+            connectSuccess?.invoke()
             connected = true
             usbIoManager = SerialInputOutputManager(usbSerialPort, object :
                 SerialInputOutputManager.Listener {
@@ -117,7 +117,7 @@ class ExternalDeviceUsb : IExternalDevice {
             usbIoManager?.start()
 
         } catch (e: Exception) {
-            connectFail(-1, "connection failed: " + e.message)
+            connectFail?.invoke(-1, "connection failed: " + e.message)
             disConnect()
         }
     }

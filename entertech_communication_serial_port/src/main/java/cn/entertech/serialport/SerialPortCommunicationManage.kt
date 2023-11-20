@@ -1,6 +1,13 @@
 package cn.entertech.serialport
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.Handler
+import android.os.Looper
+import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
 import cn.entertech.communication.ProcessDataTools
 import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
 import cn.entertech.communication.bean.ExternalDeviceType
@@ -11,15 +18,83 @@ import com.google.auto.service.AutoService
 class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
     companion object {
         private const val TAG = "SerialPortCommunicationManage"
+        const val SERIAL_PORT_HANDSHAKE_END = "serial_port_handshake_end"
     }
 
     private var normalSerial: NormalSerial? = null
+    private var context: Context? = null
+    private val broadcastReceive: BroadcastReceiver by lazy {
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                ExternalDeviceCommunicateLog.i(TAG, "broadcastReceive ${intent?.action}")
+                if (SERIAL_PORT_HANDSHAKE_END == intent?.action) {
+                    mainHandler.postDelayed({
+                        if (System.currentTimeMillis() - lastRawDataTime > 3000) {
+                            ExternalDeviceCommunicateLog.i(TAG, "handShake end no valid data")
+//                            startHeartAndBrainCollection()
+                            disConnectDevice()
+                            connectDevice(
+                                context!!,
+                                /*    {
+                                    startHeartAndBrainCollection()
+                                    connectSuccess?.invoke()
+                                },*/
+                                connectSuccess,
+                                connectFail
+                            )
+                        } else {
+                            ExternalDeviceCommunicateLog.e(TAG, "handShake end has valid data")
+                        }
+                    }, 3000)
+                }
+            }
+        }
+    }
+    private var connectSuccess: (() -> Unit)? = null
+    private var connectFail: ((Int, String) -> Unit)? = null
+
+    /**
+     * 接收到上一份完整数据时间
+     * */
+    private var lastRawDataTime = 0L
+
+    private val checkValidData by lazy {
+        Runnable {
+            ExternalDeviceCommunicateLog.i(TAG, "checkValidData")
+            if (System.currentTimeMillis() - lastRawDataTime > 3000) {
+                ExternalDeviceCommunicateLog.d(
+                    TAG,
+                    "has no valid data startHeartAndBrainCollection"
+                )
+                startHeartAndBrainCollection()
+            } else {
+                runCheckValidData()
+            }
+        }
+    }
+
+    private val mainHandler by lazy {
+        Handler(Looper.getMainLooper())
+    }
+
+    override fun initDevice(context: Context) {
+        context.startService(Intent(context, SerialPortService::class.java))
+    }
 
     override fun connectDevice(
         context: Context,
-        connectSuccess: () -> Unit,
-        connectFail: (Int, String) -> Unit
+        connectSuccess: (() -> Unit)?,
+        connectFail: ((Int, String) -> Unit)?
     ) {
+        val intentFilter = IntentFilter()
+        intentFilter.addAction(SERIAL_PORT_HANDSHAKE_END)
+        ContextCompat.registerReceiver(
+            context, broadcastReceive,
+            intentFilter, RECEIVER_NOT_EXPORTED
+        )
+        this.connectSuccess = connectSuccess
+        this.connectFail = connectFail
+        this.context = context
         normalSerial = NormalSerial.instance()
         val result = normalSerial?.open(
             "/dev/ttyHS1",
@@ -28,7 +103,7 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
         ) ?: -5
         when (result) {
             0 -> {
-                connectSuccess()
+                connectSuccess?.invoke()
                 connectListeners.forEach {
                     it.invoke()
                 }
@@ -52,7 +127,9 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
                                     it, contactListeners,
                                     bioAndAffectDataListeners,
                                     heartRateListeners
-                                )
+                                ) {
+                                    lastRawDataTime = System.currentTimeMillis()
+                                }
                             }
                         }
                     }
@@ -64,26 +141,29 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
             }
 
             -1 -> {
-                connectFail(
+                connectFail?.invoke(
                     result,
                     "Failed to open the serial port: no serial port read/write permission!"
                 )
             }
 
             -2 -> {
-                connectFail(result, "Failed to open serial port: unknown error!")
+                connectFail?.invoke(result, "Failed to open serial port: unknown error!")
             }
 
             -3 -> {
-                connectFail(result, "Failed to open the serial port: the parameter is wrong!")
+                connectFail?.invoke(
+                    result,
+                    "Failed to open the serial port: the parameter is wrong!"
+                )
             }
 
             -4 -> {
-                connectFail(result, "Failed to open the serial port: other error!")
+                connectFail?.invoke(result, "Failed to open the serial port: other error!")
             }
 
             -5 -> {
-                connectFail(result, "normalSerial init fail")
+                connectFail?.invoke(result, "normalSerial init fail")
             }
         }
 
@@ -92,6 +172,7 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
 
     override fun disConnectDevice() {
+        context?.unregisterReceiver(broadcastReceive)
         normalSerial?.close()
         disconnectListeners.forEach {
             it("")
@@ -100,10 +181,22 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
 
     override fun startHeartAndBrainCollection() {
+        runCheckValidData()
         normalSerial?.sendHex("01")
+
+    }
+
+
+    private fun runCheckValidData() {
+        ExternalDeviceCommunicateLog.d(TAG, "runCheckValidData")
+        mainHandler.removeCallbacks(checkValidData)
+        mainHandler.postDelayed({
+            checkValidData
+        }, 1000)
     }
 
     override fun stopHeartAndBrainCollection() {
+        mainHandler.removeCallbacksAndMessages(null)
         normalSerial?.sendHex("02")
     }
 

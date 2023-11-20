@@ -9,8 +9,8 @@ import cn.entertech.communication.bean.ExternalDeviceType
 interface IExternalDevice {
 
     fun connect(
-        context: Context, connectSuccess: () -> Unit,
-        connectFail: (Int, String) -> Unit,
+        context: Context, connectSuccess: (() -> Unit)?,
+        connectFail: ((Int, String) -> Unit)?,
         processData: (ByteArray) -> Unit
     )
 

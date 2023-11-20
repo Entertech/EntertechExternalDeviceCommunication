@@ -12,14 +12,14 @@ class UsbCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
     override fun connectDevice(
         context: Context,
-        connectSuccess: () -> Unit,
-        connectFail: (Int, String) -> Unit
+        connectSuccess: (() -> Unit)?,
+        connectFail: ((Int, String) -> Unit)?
     ) {
         if (externalDevice == null) {
             externalDevice = ExternalDeviceUsb()
         }
         externalDevice?.connect(context, {
-            connectSuccess()
+            connectSuccess?.invoke()
             connectListeners.forEach {
                 it()
             }
