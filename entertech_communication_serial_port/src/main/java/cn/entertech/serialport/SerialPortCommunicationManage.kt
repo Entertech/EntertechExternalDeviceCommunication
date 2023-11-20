@@ -1,15 +1,10 @@
 package cn.entertech.serialport
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
-import android.os.Message
 import cn.entertech.communication.ProcessDataTools
 import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
 import cn.entertech.communication.bean.ExternalDeviceType
 import cn.entertech.communication.log.ExternalDeviceCommunicateLog
-import java.util.concurrent.CopyOnWriteArrayList
-
 import com.google.auto.service.AutoService
 
 @AutoService(BaseExternalDeviceCommunicationManage::class)
@@ -20,10 +15,6 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
     private var normalSerial: NormalSerial? = null
 
-    private val bytes by lazy {
-        CopyOnWriteArrayList<String>()
-    }
-
     override fun connectDevice(
         context: Context,
         connectSuccess: () -> Unit,
@@ -31,7 +22,7 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
     ) {
         normalSerial = NormalSerial.instance()
         val result = normalSerial?.open(
-            "/dev/ttyMSM0",
+            "/dev/ttyHS1",
             115200, 1, 8,
             0, 0
         ) ?: -5
@@ -50,19 +41,16 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
                     }
 
                     override fun onReceive(hexData: ByteArray) {
-                        ExternalDeviceCommunicateLog.d(
-                            TAG,
-                            "onReceive data size :${hexData.size}"
-                        )
-                        if (!(contactListeners.isEmpty() && rawDataListeners.isEmpty() &&
+                        rawDataListeners.forEach {
+                            it(hexData)
+                        }
+                        if (!(contactListeners.isEmpty() && bioAndAffectDataListeners.isEmpty() &&
                                     heartRateListeners.isEmpty())
                         ) {
-
                             hexData.forEach {
-                                // bytes.add((it.toInt() and 0xff).toString())
                                 ProcessDataTools.process(
                                     it, contactListeners,
-                                    rawDataListeners,
+                                    bioAndAffectDataListeners,
                                     heartRateListeners
                                 )
                             }
@@ -116,7 +104,6 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
     }
 
     override fun stopHeartAndBrainCollection() {
-//        ExternalDeviceCommunicateLog.d(TAG, "byte: $bytes")
         normalSerial?.sendHex("02")
     }
 

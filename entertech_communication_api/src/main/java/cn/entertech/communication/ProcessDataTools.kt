@@ -1,6 +1,5 @@
 package cn.entertech.communication
 
-import android.util.Log
 import cn.entertech.communication.log.ExternalDeviceCommunicateLog
 
 /**
@@ -151,7 +150,7 @@ object ProcessDataTools {
     fun process(
         byteInt: Byte,
         contactListeners: List<((Int) -> Unit)?>,
-        rawListeners: List<((ByteArray) -> Unit)?>,
+        bioAndAffectDataListeners: List<((ByteArray) -> Unit)?>,
         heartRateListeners: List<((Int) -> Unit)>?
     ) {
         if (byteInt == vrSerialPortDataPckHeadByte) {
@@ -214,7 +213,7 @@ object ProcessDataTools {
                     return
                 }
                 if (mask == MASK_VR_SERIAL_PORT_DATA_TAIL_END) {
-                    rawListeners.forEach {
+                    bioAndAffectDataListeners.forEach {
                         it?.invoke(data)
                     }
                     reset()

@@ -27,7 +27,7 @@ class UsbCommunicationManage : BaseExternalDeviceCommunicationManage() {
             byteArray.forEach {
                 ProcessDataTools.process(
                     it, contactListeners,
-                    rawDataListeners,
+                    bioAndAffectDataListeners,
                     heartRateListeners
                 )
             }

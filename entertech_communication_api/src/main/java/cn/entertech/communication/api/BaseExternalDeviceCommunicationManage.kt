@@ -23,7 +23,11 @@ abstract class BaseExternalDeviceCommunicationManage {
 
     protected var externalDevice: IExternalDevice? = null
     private var isConnected = false
+    /**
+     * 未经处理的数据
+     * */
     protected val rawDataListeners = CopyOnWriteArrayList<(ByteArray) -> Unit>()
+    protected val bioAndAffectDataListeners = CopyOnWriteArrayList<(ByteArray) -> Unit>()
     protected val heartRateListeners = CopyOnWriteArrayList<(Int) -> Unit>()
     protected val contactListeners = CopyOnWriteArrayList<(Int) -> Unit>()
     protected val connectListeners = CopyOnWriteArrayList<() -> Unit>()
@@ -78,6 +82,14 @@ abstract class BaseExternalDeviceCommunicationManage {
      * */
     open fun removeRawDataListener(listener: (ByteArray) -> Unit) {
         rawDataListeners.remove(listener)
+    }
+
+    fun addBioAndAffectDataListener(listener: (ByteArray) -> Unit){
+        this.bioAndAffectDataListeners.add(listener)
+    }
+
+    fun removeBioAndAffectDataListener(listener: (ByteArray) -> Unit){
+        this.bioAndAffectDataListeners.remove(listener)
     }
 
     /**
