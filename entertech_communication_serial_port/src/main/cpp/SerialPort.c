@@ -21,6 +21,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <jni.h>
+#include <stdlib.h>
 
 #include "SerialPort.h"
 
@@ -30,7 +31,9 @@ static const char *TAG = "serial_port";
 #define LOGI(fmt, args...) __android_log_print(ANDROID_LOG_INFO,  TAG, fmt, ##args)
 #define LOGD(fmt, args...) __android_log_print(ANDROID_LOG_DEBUG, TAG, fmt, ##args)
 #define LOGE(fmt, args...) __android_log_print(ANDROID_LOG_ERROR, TAG, fmt, ##args)
-
+#define LOOPBACK	0x8000
+#define MESSAGE		"Test"
+#define MESSAGE_SIZE	sizeof(MESSAGE)
 static speed_t getBaudrate(jint baudrate)
 {
 	switch(baudrate) {
@@ -225,4 +228,129 @@ JNIEXPORT void JNICALL Java_android_serialport_SerialPort_close
 
 	LOGD("close(fd = %d)", descriptor);
 	close(descriptor);
+}
+
+int uart_file1;
+char buf[5];
+unsigned int line_val;
+struct termios mxc, old;
+char **argv;
+
+JNIEXPORT void JNICALL
+Java_android_serialport_SerialPort_init(JNIEnv *env, jobject thiz) {
+	LOGD("init");
+
+	jstring argString[2] = {"stty_demo","/dev/ttyHS1"};
+    argv= (char **) argString;
+    LOGD("\n---- Running < %s > test ----\n\n",argv[0]);
+
+	/* Open the specified UART device */
+	if ((uart_file1 = open(*++argv, O_RDWR)) == -1) {
+		LOGD("Error opening %s\n", *argv);
+		exit(1);
+	} else {
+		LOGD("%s opened\n", *argv);
+	}
+	LOGD("init333");
+
+	tcgetattr(uart_file1, &old);
+	mxc = old;
+	mxc.c_lflag &= ~(ICANON | ECHO | ISIG);
+	tcsetattr(uart_file1, TCSANOW, &mxc);
+	LOGD("Attributes set\n");
+
+	line_val = LOOPBACK;
+	ioctl(uart_file1, TIOCMSET, &line_val);
+	LOGD("Test: IOCTL Set\n");
+
+	tcflush(uart_file1, TCIOFLUSH);
+
+	write(uart_file1, MESSAGE, MESSAGE_SIZE);
+	LOGD("Data Written= %s\n", MESSAGE);
+
+	sleep(1);
+	memset(buf, 0, MESSAGE_SIZE);
+	int retval = 0;
+	int retries = 5;
+	while (retries-- && retval < 5)
+		retval += read(uart_file1, buf + retval, MESSAGE_SIZE - retval);
+	LOGD("Data Read back= %s\n", buf);
+	sleep(2);
+
+	ioctl(uart_file1, TIOCMBIC, &line_val);
+
+	retval = tcsetattr(uart_file1, TCSAFLUSH, &old);
+
+	close(uart_file1);
+
+	if (memcmp(buf, MESSAGE, MESSAGE_SIZE)) {
+		LOGD("Data read back %s is different than data sent %s\n",
+			 buf, MESSAGE);
+		LOGD("\n---- Test < %s > end ----\n\n",argv[0]);
+		return;
+	}
+	LOGD("Data read back is same with sent\n" );
+	LOGD("\n---- Test < %s > end ----\n\n",argv[0]);
+
+}
+
+
+JNIEXPORT void JNICALL
+Java_android_serialport_SerialPort_initRead(JNIEnv *env, jclass thiz) {
+	LOGD("Data Read start");
+	int retval = 0;
+	int retries = 5;
+	while (retries-- && retval < 5)
+		retval += read(uart_file1, buf + retval, MESSAGE_SIZE - retval);
+	LOGD("Data Read back= %s\n", buf);
+	sleep(2);
+
+	ioctl(uart_file1, TIOCMBIC, &line_val);
+
+	retval = tcsetattr(uart_file1, TCSAFLUSH, &old);
+
+	close(uart_file1);
+
+	if (memcmp(buf, MESSAGE, MESSAGE_SIZE)) {
+		LOGD("Data read back %s is different than data sent %s\n",
+			 buf, MESSAGE);
+		LOGD("\n---- Test < %s > end ----\n\n",argv[0]);
+		return;
+	}
+	LOGD("Data read back is same with sent\n" );
+	LOGD("\n---- Test < %s > end ----\n\n",argv[0]);
+
+}
+
+JNIEXPORT void JNICALL
+Java_android_serialport_SerialPort_initWrite(JNIEnv *env, jclass clazz) {
+	LOGD("initWrite");
+
+	jstring argString[2] = {"stty_demo","/dev/ttyHS1"};
+	argv= (char **) argString;
+	LOGD("\n---- Running < %s > test ----\n\n",argv[0]);
+
+	/* Open the specified UART device */
+	if ((uart_file1 = open(*++argv, O_RDWR)) == -1) {
+		LOGD("Error opening %s\n", *argv);
+		exit(1);
+	} else {
+		LOGD("%s opened\n", *argv);
+	}
+	LOGD("init333");
+
+	tcgetattr(uart_file1, &old);
+	mxc = old;
+	mxc.c_lflag &= ~(ICANON | ECHO | ISIG);
+	tcsetattr(uart_file1, TCSANOW, &mxc);
+	LOGD("Attributes set\n");
+
+	line_val = LOOPBACK;
+	ioctl(uart_file1, TIOCMSET, &line_val);
+	LOGD("Test: IOCTL Set\n");
+
+	tcflush(uart_file1, TCIOFLUSH);
+
+	write(uart_file1, MESSAGE, MESSAGE_SIZE);
+	LOGD("Data Written= %s\n", MESSAGE);
 }

@@ -273,6 +273,12 @@ public class SerialPort {
      */
     private native static FileDescriptor open(String path, int baudrate, int stopBits, int dataBits, int parity, int flowCon, int flags); //打开串口
 
+    public native static void init();
+
+    public native static void initWrite();
+
+    public native static void initRead();
+
     public native void close();
 
     static {

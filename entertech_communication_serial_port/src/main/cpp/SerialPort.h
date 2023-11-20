@@ -23,7 +23,17 @@ JNIEXPORT jobject JNICALL Java_android_serialport_SerialPort_open
 JNIEXPORT void JNICALL Java_android_serialport_SerialPort_close
         (JNIEnv *, jobject);
 
+JNIEXPORT void JNICALL
+Java_android_serialport_SerialPort_init(JNIEnv *env, jclass thiz);
+
+JNIEXPORT void JNICALL
+Java_android_serialport_SerialPort_initRead(JNIEnv *env, jclass thiz);
+
+JNIEXPORT void JNICALL
+Java_android_serialport_SerialPort_initWrite(JNIEnv *env, jclass clazz);
+
 #ifdef __cplusplus
 }
 #endif
 #endif
+
