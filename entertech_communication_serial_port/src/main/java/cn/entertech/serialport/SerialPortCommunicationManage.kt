@@ -200,6 +200,7 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
     private fun runCheckValidData() {
         ExternalDeviceCommunicateLog.d(TAG, "runCheckValidData")
+        mainHandler.removeCallbacks(checkValidData)
         mainHandler.postDelayed(
             checkValidData, 1000
         )
