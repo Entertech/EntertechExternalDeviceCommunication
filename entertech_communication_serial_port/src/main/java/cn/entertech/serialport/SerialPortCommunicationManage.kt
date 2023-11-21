@@ -23,13 +23,23 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
     private var normalSerial: NormalSerial? = null
     private var context: Context? = null
+    private var connectSuccess: (() -> Unit)? = null
+    private var connectFail: ((Int, String) -> Unit)? = null
+
+    /**
+     * 接收到上一份完整数据时间
+     * */
+    private var lastBioAffectDataTime = 0L
+
+    private var inValidDataCount = 0
+
     private val broadcastReceive: BroadcastReceiver by lazy {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 ExternalDeviceCommunicateLog.i(TAG, "broadcastReceive ${intent?.action}")
                 if (SERIAL_PORT_HANDSHAKE_END == intent?.action) {
                     mainHandler.postDelayed({
-                        if (System.currentTimeMillis() - lastRawDataTime > 3000) {
+                        if (System.currentTimeMillis() - lastBioAffectDataTime >= 3000) {
                             ExternalDeviceCommunicateLog.i(TAG, "handShake end no valid data")
                             disConnectDevice()
                             connectDevice(
@@ -45,23 +55,29 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
             }
         }
     }
-    private var connectSuccess: (() -> Unit)? = null
-    private var connectFail: ((Int, String) -> Unit)? = null
 
-    /**
-     * 接收到上一份完整数据时间
-     * */
-    private var lastRawDataTime = 0L
 
     private val checkValidData: Runnable =
         Runnable {
             ExternalDeviceCommunicateLog.i(TAG, "checkValidData")
-            if (System.currentTimeMillis() - lastRawDataTime > 3000) {
+            if (System.currentTimeMillis() - lastBioAffectDataTime > 1000) {
                 ExternalDeviceCommunicateLog.d(
                     TAG,
                     "has no valid data startHeartAndBrainCollection"
                 )
-                startHeartAndBrainCollection()
+                if (inValidDataCount < 3) {
+                    startHeartAndBrainCollection()
+                    inValidDataCount++
+                } else {
+                    context?.apply {
+                        inValidDataCount = 0
+                        initDevice(this)
+                    } ?: kotlin.run {
+                        ExternalDeviceCommunicateLog.e(TAG, "context is null")
+                    }
+                }
+            } else {
+                inValidDataCount = 0
             }
             runCheckValidData()
         }
@@ -122,7 +138,7 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
                                     bioAndAffectDataListeners,
                                     heartRateListeners
                                 ) {
-                                    lastRawDataTime = System.currentTimeMillis()
+                                    lastBioAffectDataTime = System.currentTimeMillis()
                                 }
                             }
                         }
