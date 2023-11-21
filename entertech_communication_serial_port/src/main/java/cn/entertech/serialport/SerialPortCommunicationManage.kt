@@ -72,14 +72,15 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
                     context?.apply {
                         inValidDataCount = 0
                         initDevice(this)
+                        runCheckValidData()
                     } ?: kotlin.run {
                         ExternalDeviceCommunicateLog.e(TAG, "context is null")
                     }
                 }
             } else {
                 inValidDataCount = 0
+                runCheckValidData()
             }
-            runCheckValidData()
         }
 
     private val mainHandler by lazy {
@@ -207,7 +208,7 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
     }
 
     override fun stopHeartAndBrainCollection() {
-        mainHandler.removeCallbacks(checkValidData)
+        mainHandler.removeCallbacksAndMessages(null)
         normalSerial?.sendHex("02")
     }
 
