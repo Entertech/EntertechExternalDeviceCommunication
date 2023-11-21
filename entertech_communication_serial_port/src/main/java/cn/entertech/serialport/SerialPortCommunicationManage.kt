@@ -31,14 +31,9 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
                     mainHandler.postDelayed({
                         if (System.currentTimeMillis() - lastRawDataTime > 3000) {
                             ExternalDeviceCommunicateLog.i(TAG, "handShake end no valid data")
-//                            startHeartAndBrainCollection()
                             disConnectDevice()
                             connectDevice(
                                 context!!,
-                                /*    {
-                                    startHeartAndBrainCollection()
-                                    connectSuccess?.invoke()
-                                },*/
                                 connectSuccess,
                                 connectFail
                             )
@@ -58,7 +53,7 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
      * */
     private var lastRawDataTime = 0L
 
-    private val checkValidData by lazy {
+    private val checkValidData: Runnable =
         Runnable {
             ExternalDeviceCommunicateLog.i(TAG, "checkValidData")
             if (System.currentTimeMillis() - lastRawDataTime > 3000) {
@@ -67,15 +62,14 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
                     "has no valid data startHeartAndBrainCollection"
                 )
                 startHeartAndBrainCollection()
-            } else {
-                runCheckValidData()
             }
+            runCheckValidData()
         }
-    }
 
     private val mainHandler by lazy {
         Handler(Looper.getMainLooper())
     }
+
 
     override fun initDevice(context: Context) {
         context.startService(Intent(context, SerialPortService::class.java))
@@ -172,6 +166,7 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
 
     override fun disConnectDevice() {
+        mainHandler.removeCallbacksAndMessages(null)
         context?.unregisterReceiver(broadcastReceive)
         normalSerial?.close()
         disconnectListeners.forEach {
@@ -189,14 +184,13 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
     private fun runCheckValidData() {
         ExternalDeviceCommunicateLog.d(TAG, "runCheckValidData")
-        mainHandler.removeCallbacks(checkValidData)
-        mainHandler.postDelayed({
-            checkValidData
-        }, 1000)
+        mainHandler.postDelayed(
+            checkValidData, 1000
+        )
     }
 
     override fun stopHeartAndBrainCollection() {
-        mainHandler.removeCallbacksAndMessages(null)
+        mainHandler.removeCallbacks(checkValidData)
         normalSerial?.sendHex("02")
     }
 
