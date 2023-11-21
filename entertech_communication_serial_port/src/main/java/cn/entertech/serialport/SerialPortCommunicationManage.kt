@@ -89,6 +89,10 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
 
     override fun initDevice(context: Context) {
+        ExternalDeviceCommunicateLog.i(
+            TAG,
+            "initDevice"
+        )
         context.startService(Intent(context, SerialPortService::class.java))
     }
 
