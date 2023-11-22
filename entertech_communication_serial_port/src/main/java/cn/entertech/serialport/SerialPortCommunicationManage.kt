@@ -110,77 +110,79 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
         this.connectSuccess = connectSuccess
         this.connectFail = connectFail
         this.context = context
-        normalSerial = NormalSerial.instance()
-        val result = normalSerial?.open(
-            "/dev/ttyHS1",
-            115200, 1, 8,
-            0, 0
-        ) ?: -5
-        when (result) {
-            0 -> {
-                connectSuccess?.invoke()
-                connectListeners.forEach {
-                    it.invoke()
-                }
-                normalSerial?.setSerialDataListener(object :
-                    OnSerialDataListener {
-                    override fun onSend(hexData: String?) {
-                        ExternalDeviceCommunicateLog.d(
-                            TAG, "onSend:$hexData"
-                        )
+        mainHandler.postDelayed({
+            normalSerial = NormalSerial.instance()
+            val result = normalSerial?.open(
+                "/dev/ttyHS1",
+                115200, 1, 8,
+                0, 0
+            ) ?: -5
+            when (result) {
+                0 -> {
+                    connectSuccess?.invoke()
+                    connectListeners.forEach {
+                        it.invoke()
                     }
-
-                    override fun onReceive(hexData: ByteArray) {
-                        rawDataListeners.forEach {
-                            it(hexData)
+                    normalSerial?.setSerialDataListener(object :
+                        OnSerialDataListener {
+                        override fun onSend(hexData: String?) {
+                            ExternalDeviceCommunicateLog.d(
+                                TAG, "onSend:$hexData"
+                            )
                         }
-                        if (!(contactListeners.isEmpty() && bioAndAffectDataListeners.isEmpty() &&
-                                    heartRateListeners.isEmpty())
-                        ) {
-                            hexData.forEach {
-                                ProcessDataTools.process(
-                                    it, contactListeners,
-                                    bioAndAffectDataListeners,
-                                    heartRateListeners
-                                ) {
-                                    lastBioAffectDataTime = System.currentTimeMillis()
+
+                        override fun onReceive(hexData: ByteArray) {
+                            rawDataListeners.forEach {
+                                it(hexData)
+                            }
+                            if (!(contactListeners.isEmpty() && bioAndAffectDataListeners.isEmpty() &&
+                                        heartRateListeners.isEmpty())
+                            ) {
+                                hexData.forEach {
+                                    ProcessDataTools.process(
+                                        it, contactListeners,
+                                        bioAndAffectDataListeners,
+                                        heartRateListeners
+                                    ) {
+                                        lastBioAffectDataTime = System.currentTimeMillis()
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    override fun onReceiveFullData(hexData: String?) {
+                        override fun onReceiveFullData(hexData: String?) {
 
-                    }
-                })
+                        }
+                    })
+                }
+
+                -1 -> {
+                    connectFail?.invoke(
+                        result,
+                        "Failed to open the serial port: no serial port read/write permission!"
+                    )
+                }
+
+                -2 -> {
+                    connectFail?.invoke(result, "Failed to open serial port: unknown error!")
+                }
+
+                -3 -> {
+                    connectFail?.invoke(
+                        result,
+                        "Failed to open the serial port: the parameter is wrong!"
+                    )
+                }
+
+                -4 -> {
+                    connectFail?.invoke(result, "Failed to open the serial port: other error!")
+                }
+
+                -5 -> {
+                    connectFail?.invoke(result, "normalSerial init fail")
+                }
             }
-
-            -1 -> {
-                connectFail?.invoke(
-                    result,
-                    "Failed to open the serial port: no serial port read/write permission!"
-                )
-            }
-
-            -2 -> {
-                connectFail?.invoke(result, "Failed to open serial port: unknown error!")
-            }
-
-            -3 -> {
-                connectFail?.invoke(
-                    result,
-                    "Failed to open the serial port: the parameter is wrong!"
-                )
-            }
-
-            -4 -> {
-                connectFail?.invoke(result, "Failed to open the serial port: other error!")
-            }
-
-            -5 -> {
-                connectFail?.invoke(result, "normalSerial init fail")
-            }
-        }
+        }, 1000)
 
 
     }
