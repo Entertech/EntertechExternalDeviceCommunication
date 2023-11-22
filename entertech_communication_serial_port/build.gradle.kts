@@ -2,7 +2,14 @@ plugins {
     id("com.android.library")
     id("kotlin-kapt")
     id("org.jetbrains.kotlin.android")
+//    id ("custom.android.plugin")
 }
+
+/*PublishInfo {
+    groupId = "cn.entertech.android" // 库的组织，使用域名表示
+    artifactId = "device_communicate_serialport" // 库名称
+    version = "0.0.1" // 库版本
+}*/
 
 android {
     namespace = "cn.entertech.serialport"
