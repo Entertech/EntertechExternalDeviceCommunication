@@ -1,13 +1,6 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id ("custom.android.plugin")
-}
-
-PublishInfo {
-    groupId = "cn.entertech.android" // 库的组织，使用域名表示
-    artifactId = "device_communicate_api" // 库名称
-    version = "0.0.2" // 库版本
 }
 
 android {
