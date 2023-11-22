@@ -1,11 +1,10 @@
 # 详细API说明
 
-### 外设管理类
+### 外设-串口管理类
 
 **方法说明**
 
-该类集成了外设的所有操作，实例是使用串口，目前仅支持串口类型
-串口：ExternalDeviceType.SERIAL_PORT
+该类集成了外设-串口的所有操作
 
 **示例代码**
 
@@ -13,11 +12,15 @@
 val manage = BaseExternalDeviceCommunicationManage.getManage(ExternalDeviceType.SERIAL_PORT)
 ```
 
+### 设备初始化
+
+    manage?.initDevice(context)
+
 ### 设备连接
 
 **方法说明**
 
-连接设备
+连接串口设备
 
 **示例代码**
 
@@ -30,16 +33,13 @@ val manage = BaseExternalDeviceCommunicationManage.getManage(ExternalDeviceType.
 
 ```
 
-
 **参数说明**
 
-| 参数                    | 类型                           | 说明        |
-| --------------------- | ---------------------------- | --------- |
-| successConnect        | ((String) -> Unit)?          | 连接成功回调    |
-| failure               | ((String) -> Unit)           | 连接失败回调    |
-| connectionBleStrategy | ConnectionBleStrategy        | 连接类型    ｜ |
-| filter                | (String?,String?) -> Boolean | 过滤逻辑    ｜ |
-
+| 参数             | 类型                       | 说明            |
+| -------------- | ------------------------ | ------------- |
+| context        | Context                  | 上下文，启动服务，注册广播 |
+| connectSuccess | (() -> Unit)?            | 连接成功回调        |
+| connectFail    | ((Int, String) -> Unit)? | 连接失败：错误码，错误信息 |
 
 ### 设备断开
 
@@ -74,6 +74,27 @@ val isConnected = manage?.isConnected()
 ### 设置监听接口
 
 **监听接口生命周期需要管理，不需要监听了，请调用remove**
+
+添加原始数据监听
+
+**方法说明**
+
+添加原始数据监听，通过该监听可从硬件中获取原始数据
+
+**示例代码**
+
+      var rawDataListener = fun(data:ByteArray){
+            Logger.d(Arrays.toString(data))
+      }
+      manage?.addRawDataListener(rawDataListener)
+
+**原始数据说明**
+
+| 包头             | 包长度  | 心率数据         | 脱落检测数据             | 第一个数据（左通道） | 第二个数据（右通道） | 第三个数据（左通道） | 第四个数据（右通道） | ........ | 第9个数据    | 第10个数据   | 校验位（单字节对比校验） | 包尾             |
+| :------------- | :--- | :----------- | :----------------- | :--------- | :--------- | :--------- | :--------- | :------- | :------- | :------- | :----------- | :------------- |
+| 3字节            | 1字节  | 1字节          | 1字节                | 3个字节       | 3个字节       | 3个字节       | 3字节        | ........ | 3个字节     | 3个字节     | 1字节          | 3字节            |
+| 0xBB-0xBB-0xBB | 0x28 | 0x00(心率数据为0) | 0x00(0为佩戴正常，非0为脱落) | 00-01-02   | 03-04-05   | 06-07-08   | 09-0A-0B   | ........ | 00-01-02 | 00-01-02 | 0x77         | 0xEE-0xEE-0xEE |
+
 #### 添加原始脑波监听
 
 **方法说明**
@@ -83,17 +104,17 @@ val isConnected = manage?.isConnected()
 **示例代码**
 
 ```kotlin
-  var rawDataListener = fun(data:ByteArray){
+  var bioAndAffectDataListeners = fun(data:ByteArray){
         Logger.d(Arrays.toString(data))
   }
-  manage?.addRawDataListener(rawDataListener)
+  manage?.addBioAndAffectDataListener(rawDataListener)
 ```
 
 **参数说明**
 
-| 参数            | 类型                | 说明         |
-| --------------- | ------------------- | ------------ |
-| rawDataListener | （ByteArray）->Unit | 原始脑波回调 |
+| 参数                       | 类型                | 说明     |
+| ------------------------ | ----------------- | ------ |
+| bioAndAffectDataListener | （ByteArray）->Unit | 原始脑波回调 |
 
 > **原始脑波数据说明**
 >
@@ -102,11 +123,11 @@ val isConnected = manage?.isConnected()
 >
 > **正常数据示例**
 >
-> [0, -94, 21, -36, 125, 21, -12, -75, 22, 8, 61, 22, 10, -72, 22, 15, -19,20,10,8,0, -94, 21, -36, 125, 21, -12, -75, 22, 8]
+> \[0, -94, 21, -36, 125, 21, -12, -75, 22, 8, 61, 22, 10, -72, 22, 15, -19,20,10,8]
 >
 > **异常数据示例（未检测到脑波数据）**
 >
-> [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-1,-1,-1, -1, -1, -1, -1, -1, -1, -1,-1,-1,-1]
+> \[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-1,-1,-1]
 
 #### 移除原始脑波监听
 
@@ -122,10 +143,9 @@ manage?.removeRawDataListener(rawDataListener)
 
 **参数说明**
 
-| 参数            | 类型                | 说明         |
-| --------------- | ------------------- | ------------ |
+| 参数              | 类型                | 说明     |
+| --------------- | ----------------- | ------ |
 | rawDataListener | （ByteArray）->Unit | 原始脑波回调 |
-
 
 #### 添加心率监听
 
@@ -206,15 +226,11 @@ manage?.removeContactListener(contactListener)
 | --------------- | ----------- | ------ |
 | contactListener | （Int）->Unit | 佩戴信号回调 |
 
-
 **参数说明**
 
 | 参数                     | 类型              | 说明     |
 | ---------------------- | --------------- | ------ |
 | batteryVoltageListener | （Double）-> Unit | 电池电压回调 |
-
-
-
 
 #### 开始脑波和心率数据同时采集
 
@@ -225,7 +241,7 @@ manage?.removeContactListener(contactListener)
 **示例代码**
 
 ```kotlin
-biomoduleBleManager.startHeartAndBrainCollection()
+manage?.startHeartAndBrainCollection()
 ```
 
 #### 停止脑波和心率数据采集
@@ -237,6 +253,41 @@ biomoduleBleManager.startHeartAndBrainCollection()
 **示例代码**
 
 ```kotlin
-biomoduleBleManager.stopHeartAndBrainCollection()
+manage?.stopHeartAndBrainCollection()
 ```
+
+### 辅助功能
+
+##### **调式日志**
+
+如果调试阶段需要打印日志调用如下方法：
+
+```kotlin
+ExternalDeviceCommunicateLog.printer=object :ILogPrinter{
+    override fun d(tag: String, msg: String) {
+    }
+
+    override fun i(tag: String, msg: String) {
+    }
+
+    override fun e(tag: String, msg: String) {
+    }
+}
+```
+
+内部默认使用DefaultLogPrinter
+
+    object DefaultLogPrinter:ILogPrinter {
+        override fun d(tag: String, msg: String) {
+            Log.d(tag, msg)
+        }
+
+        override fun i(tag: String, msg: String) {
+            Log.i(tag, msg)
+        }
+
+        override fun e(tag: String, msg: String) {
+            Log.e(tag, msg)
+        }
+    }
 
