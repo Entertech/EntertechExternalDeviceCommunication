@@ -1,5 +1,25 @@
 # 详细API说明
 
+### 集成
+
+#### 本地依赖
+
+将Demo中app/libs目录下的device\_communicate\_serialport-0.0.1.aar文件
+
+#### gradle自动依赖
+
+在项目根目录的build.gradle文件下添加以下依赖：
+
+```groovy
+repositories {
+    mavenCentral()
+}
+```
+
+在所需的module中的build.gradle文件下添加以下依赖：
+
+    implementation 'cn.entertech.android:device_communicate_serialport:0.0.1'
+
 ### 外设-串口管理类
 
 **方法说明**
@@ -26,10 +46,10 @@ val manage = BaseExternalDeviceCommunicationManage.getManage(ExternalDeviceType.
 
 ```kotlin
   manage?.connectDevice(this, {
-            Log.d(TAG, "connectDevice success")
-        }) { errorCode, errorMsg ->
-            Log.e(TAG, "errorCode: $errorCode  errorMsg: $errorMsg")
-        }
+    Log.d(TAG, "connectDevice success")
+}) { errorCode, errorMsg ->
+    Log.e(TAG, "errorCode: $errorCode  errorMsg: $errorMsg")
+}
 
 ```
 
@@ -105,9 +125,9 @@ val isConnected = manage?.isConnected()
 
 ```kotlin
   var bioAndAffectDataListeners = fun(data:ByteArray){
-        Logger.d(Arrays.toString(data))
-  }
-  manage?.addBioAndAffectDataListener(rawDataListener)
+    Logger.d(Arrays.toString(data))
+}
+manage?.addBioAndAffectDataListener(rawDataListener)
 ```
 
 **参数说明**
@@ -196,10 +216,10 @@ manage?.removeHeartRateListener(heartRateListener)
 
 ```kotlin
 contactListener = fun(state: Int) {
-   Logger.d("Whether the wearing contact is good:"+ state == 0);
+    Logger.d("Whether the wearing contact is good:"+ state == 0);
 }
 manage?.addContactListener(contactListener)
-    
+
 ```
 
 **参数说明**
