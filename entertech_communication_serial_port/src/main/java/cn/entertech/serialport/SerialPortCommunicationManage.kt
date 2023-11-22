@@ -119,6 +119,7 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
             ) ?: -5
             when (result) {
                 0 -> {
+                    isConnected=true
                     connectSuccess?.invoke()
                     connectListeners.forEach {
                         it.invoke()

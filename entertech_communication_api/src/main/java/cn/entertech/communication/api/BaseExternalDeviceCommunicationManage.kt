@@ -22,7 +22,7 @@ abstract class BaseExternalDeviceCommunicationManage {
 
 
     protected var externalDevice: IExternalDevice? = null
-    private var isConnected = false
+    protected var isConnected = false
     /**
      * 未经处理的数据
      * */
