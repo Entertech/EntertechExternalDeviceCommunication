@@ -22,7 +22,11 @@ abstract class BaseExternalDeviceCommunicationManage {
 
 
     protected var externalDevice: IExternalDevice? = null
-    protected var isConnected = false
+    /**
+     * 获取当前设备连接状态
+     * */
+    var isConnected = false
+        protected set
     /**
      * 未经处理的数据
      * */
@@ -66,11 +70,6 @@ abstract class BaseExternalDeviceCommunicationManage {
     fun removeDisConnectListener(listener: (String) -> Unit) {
         disconnectListeners.remove(listener)
     }
-
-    /**
-     * 获取当前设备连接状态
-     * */
-    fun isConnected() = isConnected
 
     /**
      * 添加原始脑波监听
