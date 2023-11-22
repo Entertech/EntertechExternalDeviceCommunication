@@ -125,9 +125,9 @@ val isConnected = manage?.isConnected()
 
 ```kotlin
   var bioAndAffectDataListeners = fun(data:ByteArray){
-    Logger.d(Arrays.toString(data))
-}
-manage?.addBioAndAffectDataListener(rawDataListener)
+        Logger.d(Arrays.toString(data))
+  }
+  manage?.addBioAndAffectDataListener(rawDataListener)
 ```
 
 **参数说明**
@@ -216,10 +216,10 @@ manage?.removeHeartRateListener(heartRateListener)
 
 ```kotlin
 contactListener = fun(state: Int) {
-    Logger.d("Whether the wearing contact is good:"+ state == 0);
+   Logger.d("Whether the wearing contact is good:"+ state == 0);
 }
 manage?.addContactListener(contactListener)
-
+    
 ```
 
 **参数说明**
@@ -274,6 +274,26 @@ manage?.startHeartAndBrainCollection()
 
 ```kotlin
 manage?.stopHeartAndBrainCollection()
+```
+
+#### 流程图
+
+```mermaid
+graph LR
+
+下发接受指令-->移除监听
+断开连接-->移除监听
+获取外部设备通讯服务-->设置监听
+初始化设备-->设置监听
+连接设备-->设置监听
+获取外部设备通讯服务-->
+初始化设备-->
+连接设备-->
+下发接受指令-->
+下发停止接受指令-->
+断开连接
+
+
 ```
 
 ### 辅助功能
