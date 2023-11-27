@@ -54,16 +54,18 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         startListener.setOnClickListener(this)
         endListener.setOnClickListener(this)
         manage = BaseExternalDeviceCommunicationManage.getManage(ExternalDeviceType.SERIAL_PORT)
-        manage?.initDevice(this)
+        manage?.initDevice(this) ?: kotlin.run {
+            showMsg("manage is nul ")
+        }
         manage?.addRawDataListener {
-            Log.d(TAG, "RawData ${it.map { byte -> byte.toInt() and 0xff }}")
+            showMsg("RawData ${it.map { byte -> byte.toInt() and 0xff }}")
         }
         manage?.addContactListener {
-            Log.d(TAG, "Contact it $it")
+            showMsg("Contact it $it")
         }
 
         manage?.addHeartRateListener {
-            Log.d(TAG, "hr it $it")
+            showMsg("hr it $it")
         }
      /*   val file =
             File(
@@ -76,7 +78,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         file.createNewFile()
         printWriter = PrintWriter(file)*/
         manage?.addBioAndAffectDataListener {
-            Log.d(TAG, "BioAndAffectData ${it.map { byte -> byte.toInt() and 0xff }}")
+            showMsg("BioAndAffectData ${it.map { byte -> byte.toInt() and 0xff }}")
             /*it.forEach { byte ->
                 if (isFirst) {
                     printWriter?.print((byte.toInt() and 0xff).toString())
@@ -99,12 +101,13 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         thread {
             Thread.sleep(1000 * 60 * 3)
             printWriter?.close()
-            Log.d(TAG, "stopHeartAndBrainCollection")
+            showMsg("stopHeartAndBrainCollection")
             manage?.stopHeartAndBrainCollection()
         }
     }
 
     private fun showMsg(msg: String) {
+        Log.d(TAG, msg)
         tvMsg.text = (msg)
     }
 
@@ -113,7 +116,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         when (v?.id) {
             R.id.connect -> {
                 manage?.connectDevice(this, {
-                    Log.d(TAG, "connectDevice success")
+                    showMsg("connectDevice success")
                 }) { errorCode, errorMsg ->
                     Log.e(TAG, "errorCode: $errorCode  errorMsg: $errorMsg")
                 }

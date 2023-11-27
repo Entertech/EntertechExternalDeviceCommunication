@@ -51,6 +51,7 @@
         android:layout_height="0dp"
         android:layout_marginTop="20dp"
         android:textSize="20sp"
+        android:textColor="@color/black"
         tools:text="jkdsafjl"
         app:layout_constraintTop_toBottomOf="@id/endListener"
         app:layout_constraintBottom_toBottomOf="parent"
