@@ -202,7 +202,9 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
     override fun startHeartAndBrainCollection() {
         runCheckValidData()
         normalSerial?.sendHex("01")
-
+        normalSerial?.sendHex("01")
+        normalSerial?.sendHex("01")
+        normalSerial?.sendHex("01")
     }
 
 
