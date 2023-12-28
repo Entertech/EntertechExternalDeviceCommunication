@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.View
 import android.view.View.OnClickListener
 import android.widget.Button
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
@@ -13,7 +14,6 @@ import cn.entertech.communication.bean.ExternalDeviceType
 import java.io.File
 import java.io.PrintWriter
 import java.text.SimpleDateFormat
-import java.util.Date
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity(), OnClickListener {
@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
     private lateinit var startListener: Button
     private lateinit var endListener: Button
     private lateinit var tvMsg: TextView
+    private lateinit var scrollViewLogs: ScrollView
     private var manage: BaseExternalDeviceCommunicationManage? = null
     private val sim by lazy {
         SimpleDateFormat("yyyy年MM月dd日HH:mm:ss:SSS")
@@ -45,6 +46,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         connect = findViewById(R.id.connect)
+        scrollViewLogs = findViewById(R.id.scrollView_logs)
         disconnect = findViewById(R.id.disconnect)
         startListener = findViewById(R.id.startListener)
         endListener = findViewById(R.id.endListener)
@@ -90,13 +92,24 @@ class MainActivity : AppCompatActivity(), OnClickListener {
             }
             printWriter?.flush()*/
         }
-
         manage?.connectDevice(this, {
-            Log.d(TAG, "connectDevice success")
+            showMsg( "connectDevice success")
             manage?.startHeartAndBrainCollection()
         }) { errorCode, errorMsg ->
-            Log.e(TAG, "errorCode: $errorCode  errorMsg: $errorMsg")
+            showMsg( "errorCode: $errorCode  errorMsg: $errorMsg")
         }
+       /* thread {
+            Thread.sleep(3000 )
+            runOnUiThread {
+                manage?.connectDevice(this, {
+                    showMsg( "connectDevice success")
+                    manage?.startHeartAndBrainCollection()
+                }) { errorCode, errorMsg ->
+                    showMsg( "errorCode: $errorCode  errorMsg: $errorMsg")
+                }
+            }
+
+        }*/
 
         thread {
             Thread.sleep(1000 * 60 * 3)
@@ -105,11 +118,23 @@ class MainActivity : AppCompatActivity(), OnClickListener {
             manage?.stopHeartAndBrainCollection()
         }
     }
-
+    private var screenText: String = ""
     private fun showMsg(msg: String) {
         Log.d(TAG, msg)
-        tvMsg.text = (msg)
+        runOnUiThread {
+            screenText += "->:$msg\n"
+            if (screenText.split("\n").size >= 20) {
+                var startIndex = screenText.indexOfFirst {
+                    it == '\n'
+                }
+                screenText = screenText.substring(startIndex + 1, screenText.length)
+            }
+            tvMsg.text = screenText
+            scrollViewLogs.fullScroll(ScrollView.FOCUS_DOWN)
+        }
+
     }
+
 
 
     override fun onClick(v: View?) {
@@ -118,7 +143,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
                 manage?.connectDevice(this, {
                     showMsg("connectDevice success")
                 }) { errorCode, errorMsg ->
-                    Log.e(TAG, "errorCode: $errorCode  errorMsg: $errorMsg")
+                    showMsg("errorCode: $errorCode  errorMsg: $errorMsg")
                 }
             }
 
