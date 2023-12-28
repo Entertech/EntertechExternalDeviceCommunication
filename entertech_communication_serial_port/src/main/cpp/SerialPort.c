@@ -254,6 +254,8 @@ Java_android_serialport_SerialPort_init(JNIEnv *env, jobject thiz) {
 	LOGD("init333");
 
 	tcgetattr(uart_file1, &old);
+	cfsetispeed(&old, B115200);
+	cfsetospeed(&old, B115200);
 	mxc = old;
 	mxc.c_lflag &= ~(ICANON | ECHO | ISIG);
 	tcsetattr(uart_file1, TCSANOW, &mxc);
@@ -276,11 +278,11 @@ Java_android_serialport_SerialPort_init(JNIEnv *env, jobject thiz) {
 		retval += read(uart_file1, buf + retval, MESSAGE_SIZE - retval);
 	LOGD("Data Read back= %s\n", buf);
 	sleep(2);
-
+	LOGD("ioctl TIOCMBIC start\n");
 	ioctl(uart_file1, TIOCMBIC, &line_val);
-
+	LOGD("tcsetattr TCSAFLUSH start\n");
 	retval = tcsetattr(uart_file1, TCSAFLUSH, &old);
-
+	LOGD("close file start\n");
 	close(uart_file1);
 
 	if (memcmp(buf, MESSAGE, MESSAGE_SIZE)) {
