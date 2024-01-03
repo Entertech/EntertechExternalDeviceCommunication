@@ -14,6 +14,7 @@ import cn.entertech.communication.bean.ExternalDeviceType
 import java.io.File
 import java.io.PrintWriter
 import java.text.SimpleDateFormat
+import java.util.Date
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity(), OnClickListener {
@@ -69,7 +70,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         manage?.addHeartRateListener {
             showMsg("hr it $it")
         }
-     /*   val file =
+        val file =
             File(
                 getSaveFileDirectory(this),
                 sim.format(Date(System.currentTimeMillis())) + ".txt"
@@ -78,46 +79,58 @@ class MainActivity : AppCompatActivity(), OnClickListener {
             file.parentFile?.mkdirs()
         }
         file.createNewFile()
-        printWriter = PrintWriter(file)*/
+        printWriter = PrintWriter(file)
+        var index = 0
         manage?.addBioAndAffectDataListener {
-            showMsg("BioAndAffectData ${it.map { byte -> byte.toInt() and 0xff }}")
-            /*it.forEach { byte ->
-                if (isFirst) {
-                    printWriter?.print((byte.toInt() and 0xff).toString())
-                    isFirst = false
+            val sb = StringBuilder()
+            it.forEach { byte ->
+                if (index % 20 == 0) {
+                    if (isFirst) {
+                        printWriter?.print("0, ")
+                        isFirst = false
+                    } else {
+                        printWriter?.append("0, ")
+                    }
+                    ++index
+                    printWriter?.append("0, ")
                 } else {
-                    printWriter?.append((byte.toInt() and 0xff).toString())
+                    val data = byte.toInt() and 0xff
+                    sb.append(data).append(",")
+                    printWriter?.append(data.toString())
+                    printWriter?.append(", ")
                 }
-                printWriter?.append(",")
+                ++index
             }
-            printWriter?.flush()*/
+            printWriter?.flush()
+            showMsg("BioAndAffectData $sb")
         }
-        manage?.connectDevice(this, {
-            showMsg( "connectDevice success")
-            manage?.startHeartAndBrainCollection()
-        }) { errorCode, errorMsg ->
-            showMsg( "errorCode: $errorCode  errorMsg: $errorMsg")
-        }
-       /* thread {
-            Thread.sleep(3000 )
-            runOnUiThread {
-                manage?.connectDevice(this, {
-                    showMsg( "connectDevice success")
-                    manage?.startHeartAndBrainCollection()
-                }) { errorCode, errorMsg ->
-                    showMsg( "errorCode: $errorCode  errorMsg: $errorMsg")
-                }
-            }
+        /*  manage?.connectDevice(this, {
+              showMsg("connectDevice success")
+              manage?.startHeartAndBrainCollection()
+          }) { errorCode, errorMsg ->
+              showMsg("errorCode: $errorCode  errorMsg: $errorMsg")
+          }*/
+        /* thread {
+             Thread.sleep(3000 )
+             runOnUiThread {
+                 manage?.connectDevice(this, {
+                     showMsg( "connectDevice success")
+                     manage?.startHeartAndBrainCollection()
+                 }) { errorCode, errorMsg ->
+                     showMsg( "errorCode: $errorCode  errorMsg: $errorMsg")
+                 }
+             }
 
-        }*/
+         }*/
 
-        thread {
-            Thread.sleep(1000 * 60 * 3)
-            printWriter?.close()
-            showMsg("stopHeartAndBrainCollection")
-            manage?.stopHeartAndBrainCollection()
-        }
+        /*    thread {
+                Thread.sleep(1000 * 60 * 30)
+                printWriter?.close()
+                showMsg("stopHeartAndBrainCollection")
+                manage?.stopHeartAndBrainCollection()
+            }*/
     }
+
     private var screenText: String = ""
     private fun showMsg(msg: String) {
         Log.d(TAG, msg)
@@ -136,7 +149,6 @@ class MainActivity : AppCompatActivity(), OnClickListener {
     }
 
 
-
     override fun onClick(v: View?) {
         when (v?.id) {
             R.id.connect -> {
@@ -152,11 +164,23 @@ class MainActivity : AppCompatActivity(), OnClickListener {
             }
 
             R.id.startListener -> {
-                manage?.startHeartAndBrainCollection()
+                manage?.apply {
+                    if (isConnected) {
+                        startHeartAndBrainCollection()
+                    } else {
+                        showMsg("设备未连接")
+                    }
+                }
             }
 
             R.id.endListener -> {
-                manage?.stopHeartAndBrainCollection()
+                manage?.apply {
+                    if (isConnected) {
+                        stopHeartAndBrainCollection()
+                    } else {
+                        showMsg("设备未连接")
+                    }
+                }
             }
 
         }
