@@ -25,19 +25,9 @@ class MainActivity : AppCompatActivity(), OnClickListener {
     private lateinit var tvMsg: TextView
     private lateinit var scrollViewLogs: ScrollView
     private var manage: BaseExternalDeviceCommunicationManage? = null
-    private val sim by lazy {
-        SimpleDateFormat("yyyy年MM月dd日HH:mm:ss:SSS")
-    }
-    private var isFirst = true
 
-    private fun getSaveFileDirectory(context: Context): File {
-        return File(
-            context.getExternalFilesDir("") ?: context.filesDir,
-            "serialPortData"
-        )
-    }
+    private var mFileSaveTools: FileSaveTools? = null
 
-    private var printWriter: PrintWriter? = null
 
     companion object {
         private const val TAG = "MainActivity"
@@ -70,38 +60,10 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         manage?.addHeartRateListener {
             showMsg("hr it $it")
         }
-        val file =
-            File(
-                getSaveFileDirectory(this),
-                sim.format(Date(System.currentTimeMillis())) + ".txt"
-            )
-        if (!file.exists()) {
-            file.parentFile?.mkdirs()
-        }
-        file.createNewFile()
-        printWriter = PrintWriter(file)
-        var index = 0
+
         manage?.addBioAndAffectDataListener {
             val sb = StringBuilder()
-            it.forEach { byte ->
-                if (index % 20 == 0) {
-                    if (isFirst) {
-                        printWriter?.print("0, ")
-                        isFirst = false
-                    } else {
-                        printWriter?.append("0, ")
-                    }
-                    ++index
-                    printWriter?.append("0, ")
-                } else {
-                    val data = byte.toInt() and 0xff
-                    sb.append(data).append(",")
-                    printWriter?.append(data.toString())
-                    printWriter?.append(", ")
-                }
-                ++index
-            }
-            printWriter?.flush()
+            mFileSaveTools?.appendData(this,it)
             showMsg("BioAndAffectData $sb")
         }
         /*  manage?.connectDevice(this, {
@@ -166,6 +128,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
             R.id.startListener -> {
                 manage?.apply {
                     if (isConnected) {
+                        mFileSaveTools = FileSaveTools()
                         startHeartAndBrainCollection()
                     } else {
                         showMsg("设备未连接")
