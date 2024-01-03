@@ -148,6 +148,10 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
                                         lastBioAffectDataTime = System.currentTimeMillis()
                                     }
                                 }
+                            }else{
+                                ExternalDeviceCommunicateLog.d(
+                                    TAG, "listener is empty"
+                                )
                             }
                         }
 
