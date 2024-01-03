@@ -1,6 +1,9 @@
 package cn.entertech.device
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -9,11 +12,13 @@ import android.widget.Button
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
 import cn.entertech.communication.bean.ExternalDeviceType
 import java.io.File
 import java.io.PrintWriter
 import java.text.SimpleDateFormat
+import java.util.ArrayList
 import java.util.Date
 import kotlin.concurrent.thread
 
@@ -46,6 +51,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         disconnect.setOnClickListener(this)
         startListener.setOnClickListener(this)
         endListener.setOnClickListener(this)
+        initPermission()
         manage = BaseExternalDeviceCommunicationManage.getManage(ExternalDeviceType.SERIAL_PORT)
         manage?.initDevice(this) ?: kotlin.run {
             showMsg("manage is nul ")
@@ -63,7 +69,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
 
         manage?.addBioAndAffectDataListener {
             val sb = StringBuilder()
-            mFileSaveTools?.appendData(this,it)
+            mFileSaveTools?.appendData(this, it)
             showMsg("BioAndAffectData $sb")
         }
         /*  manage?.connectDevice(this, {
@@ -99,7 +105,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         runOnUiThread {
             screenText += "->:$msg\n"
             if (screenText.split("\n").size >= 20) {
-                var startIndex = screenText.indexOfFirst {
+                val startIndex = screenText.indexOfFirst {
                     it == '\n'
                 }
                 screenText = screenText.substring(startIndex + 1, screenText.length)
@@ -110,6 +116,45 @@ class MainActivity : AppCompatActivity(), OnClickListener {
 
     }
 
+    /**
+     * Android6.0 auth
+     */
+    private fun initPermission() {
+        val needPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            arrayOf(
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.BLUETOOTH_CONNECT,
+                Manifest.permission.BLUETOOTH_ADVERTISE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.MANAGE_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+        } else {
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.MANAGE_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+        }
+        val needRequestPermissions = ArrayList<String>()
+        for (i in needPermission.indices) {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    needPermission[i]
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                needRequestPermissions.add(needPermission[i])
+            }
+        }
+        if (needRequestPermissions.size != 0) {
+            val permissions = arrayOfNulls<String>(needRequestPermissions.size)
+            for (i in needRequestPermissions.indices) {
+                permissions[i] = needRequestPermissions[i]
+            }
+            ActivityCompat.requestPermissions(this@MainActivity, permissions, 1)
+        }
+    }
 
     override fun onClick(v: View?) {
         when (v?.id) {
