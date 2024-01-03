@@ -22,11 +22,13 @@ abstract class BaseExternalDeviceCommunicationManage {
 
 
     protected var externalDevice: IExternalDevice? = null
+
     /**
      * 获取当前设备连接状态
      * */
     var isConnected = false
         protected set
+
     /**
      * 未经处理的数据
      * */
@@ -37,7 +39,7 @@ abstract class BaseExternalDeviceCommunicationManage {
     protected val connectListeners = CopyOnWriteArrayList<() -> Unit>()
     protected val disconnectListeners = CopyOnWriteArrayList<(String) -> Unit>()
 
-    open fun initDevice(context: Context){
+    open fun initDevice(context: Context) {
 
     }
 
@@ -51,6 +53,9 @@ abstract class BaseExternalDeviceCommunicationManage {
     )
 
     fun addConnectListener(listener: () -> Unit) {
+        if (this.connectListeners.contains(listener)) {
+            return
+        }
         connectListeners.add(listener)
     }
 
@@ -64,6 +69,9 @@ abstract class BaseExternalDeviceCommunicationManage {
     abstract fun disConnectDevice()
 
     fun addDisConnectListener(listener: (String) -> Unit) {
+        if (this.disconnectListeners.contains(listener)) {
+            return
+        }
         disconnectListeners.add(listener)
     }
 
@@ -86,11 +94,13 @@ abstract class BaseExternalDeviceCommunicationManage {
         rawDataListeners.remove(listener)
     }
 
-    fun addBioAndAffectDataListener(listener: (ByteArray) -> Unit){
-        this.bioAndAffectDataListeners.add(listener)
+    fun addBioAndAffectDataListener(listener: (ByteArray) -> Unit) {
+        if (!bioAndAffectDataListeners.contains(listener)) {
+            this.bioAndAffectDataListeners.add(listener)
+        }
     }
 
-    fun removeBioAndAffectDataListener(listener: (ByteArray) -> Unit){
+    fun removeBioAndAffectDataListener(listener: (ByteArray) -> Unit) {
         this.bioAndAffectDataListeners.remove(listener)
     }
 
@@ -98,6 +108,9 @@ abstract class BaseExternalDeviceCommunicationManage {
      * 添加心率监听，通过该监听可从硬件中获取心率数据
      * */
     fun addHeartRateListener(listener: (Int) -> Unit) {
+        if (this.heartRateListeners.contains(listener)) {
+            return
+        }
         this.heartRateListeners.add(listener)
     }
 
@@ -116,6 +129,9 @@ abstract class BaseExternalDeviceCommunicationManage {
      * 佩戴信号回调。0:接触良好，其他值：未正常佩戴
      * */
     fun addContactListener(listener: (Int) -> Unit) {
+        if (this.contactListeners.contains(listener)) {
+            return
+        }
         this.contactListeners.add(listener)
     }
 
