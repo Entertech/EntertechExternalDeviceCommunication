@@ -8,7 +8,7 @@ plugins {
 /*PublishInfo {
     groupId = "cn.entertech.android" // 库的组织，使用域名表示
     artifactId = "device_communicate_serialport" // 库名称
-    version = "0.0.1" // 库版本
+    version = "0.0.2" // 库版本
 }*/
 
 android {
@@ -55,5 +55,5 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    api ("cn.entertech.android:device_communicate_api:0.0.2")
+    api ("cn.entertech.android:device_communicate_api:0.0.3")
 }

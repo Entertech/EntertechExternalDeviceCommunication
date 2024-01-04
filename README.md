@@ -4,7 +4,7 @@
 
 #### 本地依赖
 
-将Demo中app/libs目录下的device\_communicate\_serialport-0.0.1.aar文件
+将Demo中app/libs目录下的device\_communicate\_serialport-0.0.2.aar文件
 
 #### gradle自动依赖
 
@@ -18,7 +18,7 @@ repositories {
 
 在所需的module中的build.gradle文件下添加以下依赖：
 
-    implementation 'cn.entertech.android:device_communicate_serialport:0.0.1'
+    implementation 'cn.entertech.android:device_communicate_serialport:0.0.2'
 
 ### 外设-串口管理类
 
@@ -125,9 +125,9 @@ val isConnected = manage?.isConnected()
 
 ```kotlin
   var bioAndAffectDataListeners = fun(data:ByteArray){
-        Logger.d(Arrays.toString(data))
-  }
-  manage?.addBioAndAffectDataListener(rawDataListener)
+    Logger.d(Arrays.toString(data))
+}
+manage?.addBioAndAffectDataListener(rawDataListener)
 ```
 
 **参数说明**
@@ -216,10 +216,10 @@ manage?.removeHeartRateListener(heartRateListener)
 
 ```kotlin
 contactListener = fun(state: Int) {
-   Logger.d("Whether the wearing contact is good:"+ state == 0);
+    Logger.d("Whether the wearing contact is good:"+ state == 0);
 }
 manage?.addContactListener(contactListener)
-    
+
 ```
 
 **参数说明**
