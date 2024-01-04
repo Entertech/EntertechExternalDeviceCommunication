@@ -40,6 +40,7 @@ class FileSaveTools {
                 ++index
 //                stringBuild2.append("0, ")
                 printWriter?.append("0, ")
+                ++index
             }
 //            stringBuild2.append(dataHex.toString())
 //            stringBuild2.append(", ")
