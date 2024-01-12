@@ -52,6 +52,9 @@ abstract class BaseExternalDeviceCommunicationManage {
         connectFail: ((Int, String) -> Unit)?
     )
 
+    /**
+     * 增加连接成功的监听
+     * */
     fun addConnectListener(listener: () -> Unit) {
         if (this.connectListeners.contains(listener)) {
             return
@@ -59,6 +62,9 @@ abstract class BaseExternalDeviceCommunicationManage {
         connectListeners.add(listener)
     }
 
+    /**
+     * 移除连接成功的监听
+     * */
     fun removeConnectListener(listener: () -> Unit) {
         connectListeners.remove(listener)
     }
@@ -68,6 +74,10 @@ abstract class BaseExternalDeviceCommunicationManage {
      * */
     abstract fun disConnectDevice()
 
+
+    /**
+     * 增加断开连接的监听
+     * */
     fun addDisConnectListener(listener: (String) -> Unit) {
         if (this.disconnectListeners.contains(listener)) {
             return
@@ -75,6 +85,9 @@ abstract class BaseExternalDeviceCommunicationManage {
         disconnectListeners.add(listener)
     }
 
+    /**
+     * 移除断开成功的监听
+     * */
     fun removeDisConnectListener(listener: (String) -> Unit) {
         disconnectListeners.remove(listener)
     }
