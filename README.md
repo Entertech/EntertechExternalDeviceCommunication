@@ -91,11 +91,53 @@ val isConnected = manage?.isConnected()
 | ----------- | ------- | --------------------- |
 | isConnected | Boolean | 设备已连接为true，未连接为false。 |
 
-### 设置监听接口
 
-**监听接口生命周期需要管理，不需要监听了，请调用remove**
 
-添加原始数据监听
+### 添加|移除 断开连接成功监听
+
+**方法说明**
+
+添加|移除 断开连接成功监听，断开连接成功回调
+
+**示例代码**
+
+```kotlin
+private val disconnectListener by lazy { 
+        //todo   
+}
+
+manage?.addDisConnectListener(disconnectListener)
+
+```
+
+监听接口生命周期需要管理，不需要监听了，请调用remove
+```kotlin
+manage?.removeDisConnectListener (disconnectListener)
+```
+
+### 添加|移除 连接成功监听
+
+**方法说明**
+
+添加连接|移除成功监听，连接成功回调
+
+**示例代码**
+
+```kotlin
+private val connectListener by lazy { 
+        //todo   
+}
+
+manage?.addConnectListener(connectListener)
+
+```
+
+监听接口生命周期需要管理，不需要监听了，请调用remove
+```kotlin
+manage?.removeConnectListener (connectListener)
+```
+
+### 添加原始数据监听
 
 **方法说明**
 
@@ -125,9 +167,9 @@ val isConnected = manage?.isConnected()
 
 ```kotlin
   var bioAndAffectDataListeners = fun(data:ByteArray){
-    Logger.d(Arrays.toString(data))
-}
-manage?.addBioAndAffectDataListener(rawDataListener)
+        Logger.d(Arrays.toString(data))
+  }
+  manage?.addBioAndAffectDataListener(rawDataListener)
 ```
 
 **参数说明**
@@ -216,10 +258,10 @@ manage?.removeHeartRateListener(heartRateListener)
 
 ```kotlin
 contactListener = fun(state: Int) {
-    Logger.d("Whether the wearing contact is good:"+ state == 0);
+   Logger.d("Whether the wearing contact is good:"+ state == 0);
 }
 manage?.addContactListener(contactListener)
-
+    
 ```
 
 **参数说明**
