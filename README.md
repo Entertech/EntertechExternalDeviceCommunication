@@ -102,8 +102,10 @@ val isConnected = manage?.isConnected()
 **示例代码**
 
 ```kotlin
-private val disconnectListener by lazy { 
-        //todo   
+private val disconnectListener:(String)->Unit by lazy {
+    {
+//todo
+    }
 }
 
 manage?.addDisConnectListener(disconnectListener)
@@ -124,9 +126,11 @@ manage?.removeDisConnectListener (disconnectListener)
 **示例代码**
 
 ```kotlin
-private val connectListener by lazy { 
-        //todo   
-}
+ private val connectListener by lazy {
+        {
+//todo
+        }
+    }
 
 manage?.addConnectListener(connectListener)
 
@@ -136,6 +140,10 @@ manage?.addConnectListener(connectListener)
 ```kotlin
 manage?.removeConnectListener (connectListener)
 ```
+
+
+
+
 
 ### 添加原始数据监听
 
@@ -167,9 +175,9 @@ manage?.removeConnectListener (connectListener)
 
 ```kotlin
   var bioAndAffectDataListeners = fun(data:ByteArray){
-        Logger.d(Arrays.toString(data))
-  }
-  manage?.addBioAndAffectDataListener(rawDataListener)
+    Logger.d(Arrays.toString(data))
+}
+manage?.addBioAndAffectDataListener(rawDataListener)
 ```
 
 **参数说明**
@@ -258,10 +266,10 @@ manage?.removeHeartRateListener(heartRateListener)
 
 ```kotlin
 contactListener = fun(state: Int) {
-   Logger.d("Whether the wearing contact is good:"+ state == 0);
+    Logger.d("Whether the wearing contact is good:"+ state == 0);
 }
 manage?.addContactListener(contactListener)
-    
+
 ```
 
 **参数说明**
