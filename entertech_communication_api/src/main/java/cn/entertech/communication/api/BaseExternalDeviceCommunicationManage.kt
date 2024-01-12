@@ -36,7 +36,7 @@ abstract class BaseExternalDeviceCommunicationManage {
     protected val bioAndAffectDataListeners = CopyOnWriteArrayList<(ByteArray) -> Unit>()
     protected val heartRateListeners = CopyOnWriteArrayList<(Int) -> Unit>()
     protected val contactListeners = CopyOnWriteArrayList<(Int) -> Unit>()
-    protected val connectListeners = CopyOnWriteArrayList<() -> Unit>()
+    protected val connectListeners = CopyOnWriteArrayList<(String) -> Unit>()
     protected val disconnectListeners = CopyOnWriteArrayList<(String) -> Unit>()
 
     open fun initDevice(context: Context) {
@@ -55,7 +55,7 @@ abstract class BaseExternalDeviceCommunicationManage {
     /**
      * 增加连接成功的监听
      * */
-    fun addConnectListener(listener: () -> Unit) {
+    fun addConnectListener(listener: (String) -> Unit) {
         if (this.connectListeners.contains(listener)) {
             return
         }
@@ -65,7 +65,7 @@ abstract class BaseExternalDeviceCommunicationManage {
     /**
      * 移除连接成功的监听
      * */
-    fun removeConnectListener(listener: () -> Unit) {
+    fun removeConnectListener(listener: (String) -> Unit) {
         connectListeners.remove(listener)
     }
 

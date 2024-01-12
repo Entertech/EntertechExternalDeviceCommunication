@@ -32,7 +32,17 @@ class MainActivity : AppCompatActivity(), OnClickListener {
     private var manage: BaseExternalDeviceCommunicationManage? = null
 
     private var mFileSaveTools: FileSaveTools? = null
+    private val disconnectListener:(String)->Unit by lazy {
+        {
 
+        }
+    }
+
+    private val connectListener:(String)->Unit by lazy {
+        {
+
+        }
+    }
 
     companion object {
         private const val TAG = "MainActivity"
@@ -66,6 +76,8 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         manage?.addHeartRateListener {
             showMsg("hr it $it")
         }
+        manage?.addConnectListener(connectListener)
+        manage?.addDisConnectListener(disconnectListener)
 
         manage?.addBioAndAffectDataListener {
             val sb = StringBuilder()
@@ -196,6 +208,8 @@ class MainActivity : AppCompatActivity(), OnClickListener {
 
     override fun onDestroy() {
         manage?.disConnectDevice()
+        manage?.removeConnectListener(connectListener)
+        manage?.removeDisConnectListener(disconnectListener)
         super.onDestroy()
 
     }
