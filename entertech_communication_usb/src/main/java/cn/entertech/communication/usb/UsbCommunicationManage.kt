@@ -21,7 +21,7 @@ class UsbCommunicationManage : BaseExternalDeviceCommunicationManage() {
         externalDevice?.connect(context, {
             connectSuccess?.invoke()
             connectListeners.forEach {
-                it()
+                it("")
             }
         }, connectFail) { byteArray ->
             byteArray.forEach {
