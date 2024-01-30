@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         ExternalDeviceCommunicateLog.printer = DefaultLogPrinter
-//        enterAffectiveSDKManager = EnterAffectiveSDKManager.getInstance(applicationContext)
+        enterAffectiveSDKManager = EnterAffectiveSDKManager.getInstance(applicationContext)
         enterAffectiveSDKManager?.addEEGRealtimeListener {
             showMsg("实时脑电数据：${it}")
         }
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         }
 
         manage?.addBioAndAffectDataListener {
-//            mFileSaveTools?.appendData(this, it)
+            mFileSaveTools?.appendData(this, it)
             showMsg("BioAndAffectData ${Arrays.toString(it)}")
             if (enterAffectiveSDKManager?.isInited() == true) {
                 enterAffectiveSDKManager?.appendEEG(it)
@@ -206,6 +206,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
             R.id.endListener -> {
                 manage?.apply {
                     if (isConnected) {
+                        mFileSaveTools?.finishAppendData()
                         stopHeartAndBrainCollection()
                     } else {
                         showMsg("设备未连接")
