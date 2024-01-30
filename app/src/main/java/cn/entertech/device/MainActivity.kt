@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         private const val TAG = "MainActivity"
     }
 
-    private val end: Runnable = Runnable {
+/*    private val end: Runnable = Runnable {
         manage?.apply {
             if (isConnected) {
                 stopHeartAndBrainCollection()
@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
             }
             handler?.postDelayed(end, 1000 * 2)
         }
-    }
+    }*/
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -133,18 +133,18 @@ class MainActivity : AppCompatActivity(), OnClickListener {
             }
         }
 
-        manage?.connectDevice(this, {
+  /*      manage?.connectDevice(this, {
             showMsg("connectDevice success")
         }) { errorCode, errorMsg ->
             showMsg("errorCode: $errorCode  errorMsg: $errorMsg")
-        }
-        auto()
+        }*/
+//        auto()
     }
 
     private fun auto() {
-        handler.postDelayed(
+       /* handler.postDelayed(
             start
-        , 1000)
+        , 1000)*/
     }
 
 
