@@ -140,7 +140,7 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
                                         heartRateListeners.isEmpty())
                             ) {
                                 hexData.forEach {
-                                    ProcessDataTools.process(
+                                    this@SerialPortCommunicationManage.mIProcessDataHelper?.process(
                                         it, contactListeners,
                                         bioAndAffectDataListeners,
                                         heartRateListeners

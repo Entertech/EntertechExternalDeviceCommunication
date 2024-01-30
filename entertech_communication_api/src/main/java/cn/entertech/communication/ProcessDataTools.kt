@@ -1,5 +1,7 @@
 package cn.entertech.communication
 
+import cn.entertech.communication.api.IDataAdapter
+import cn.entertech.communication.api.IProcessDataHelper
 import cn.entertech.communication.log.ExternalDeviceCommunicateLog
 
 /**
@@ -10,23 +12,94 @@ import cn.entertech.communication.log.ExternalDeviceCommunicateLog
  * | 0xBB-0xBB-0xBB  | 0x28 | 0x00(心率数据为0) | 0x00(0为佩戴正常，非0为脱落) | 00-01-02  | 03-04-05 | 06-07-08 | 09-0A-0B  | ........  | 00-01-02 | 00-01-02 | 0x77 | 0xEE-0xEE-0xEE  |
  *
  * */
-object ProcessDataTools {
-    private const val TAG = "ProcessDataTools"
+class ProcessDataTools: IProcessDataHelper {
 
-    /**
-     * 包头位 3字节
-     * */
-    private const val VR_SERIAL_PORT_DATA_PCK_START = "BB"
+    companion object {
+        private const val TAG = "ProcessDataTools"
 
-    /**
-     * 校验位
-     * */
-    private const val VR_SERIAL_PORT_DATA_PCK_CHECK = "77"
+        /**
+         * 包头位 3字节
+         * */
+        private const val VR_SERIAL_PORT_DATA_PCK_START = "BB"
 
-    /**
-     * 包尾位 3字节
-     * */
-    private const val VR_SERIAL_PORT_DATA_PCK_END = "EE"
+        /**
+         * 校验位
+         * */
+        private const val VR_SERIAL_PORT_DATA_PCK_CHECK = "77"
+
+        /**
+         * 包尾位 3字节
+         * */
+        private const val VR_SERIAL_PORT_DATA_PCK_END = "EE"
+
+        private const val DATA_COUNT = 10
+
+        /**
+         * [mask] 每次移动的
+         * */
+        private const val MASK_STEP = 1
+        private const val MASK_DEFAULT = -1
+
+
+        /**
+         * 包头起始位
+         * */
+        private const val MASK_VR_SERIAL_PORT_DATA_HEAD_START = 0
+
+        /*
+        * 包头结束位
+        * */
+        private const val MASK_VR_SERIAL_PORT_DATA_HEAD_END =
+            MASK_VR_SERIAL_PORT_DATA_HEAD_START + 2
+
+        /**
+         * 数据总长度位
+         * */
+        private const val MASK_VR_SERIAL_PORT_DATA_LENGTH = MASK_VR_SERIAL_PORT_DATA_HEAD_END + 1
+
+
+        /**
+         * 心率数据
+         * */
+        private const val MASK_VR_SERIAL_PORT_DATA_HR = MASK_VR_SERIAL_PORT_DATA_LENGTH + 1
+
+
+        /**
+         * 脱落检测数据
+         * */
+        private const val MASK_VR_SERIAL_PORT_DATA_CHECK_CONTACT = MASK_VR_SERIAL_PORT_DATA_HR + 1
+
+        /**
+         * 数据位开头
+         * */
+        private const val MASK_VR_SERIAL_PORT_DATA_START =
+            MASK_VR_SERIAL_PORT_DATA_CHECK_CONTACT + 1
+
+        /**
+         * 数据位末尾
+         * */
+        private const val MASK_VR_SERIAL_PORT_DATA_END =
+            MASK_VR_SERIAL_PORT_DATA_START + 2 + (DATA_COUNT - 1) * 3
+
+        /**
+         * 校验位
+         * */
+        private const val MASK_VR_SERIAL_PORT_DATA_CHECK = MASK_VR_SERIAL_PORT_DATA_END + 1
+
+        /**
+         * 包尾起始位
+         * */
+        private const val MASK_VR_SERIAL_PORT_DATA_TAIL_START =
+            MASK_VR_SERIAL_PORT_DATA_CHECK + 1
+
+        /**
+         * 包尾结束位
+         * */
+        private const val MASK_VR_SERIAL_PORT_DATA_TAIL_END =
+            MASK_VR_SERIAL_PORT_DATA_TAIL_START + 2
+
+    }
+
 
     /**
      * 包头位 对应的int
@@ -39,6 +112,7 @@ object ProcessDataTools {
     private val vrSerialPortDataPckHeadByte by lazy {
         vrSerialPortDataPckHeadInt.toByte()
     }
+
 
     /**
      * 校验位 对应的int
@@ -68,72 +142,12 @@ object ProcessDataTools {
     private var start = false
 
 
-    private const val DATA_COUNT = 10
-
-    /**
-     * [mask] 每次移动的
-     * */
-    private const val MASK_STEP = 1
-    private const val MASK_DEFAULT = -1
-
-    /**
-     * 包头起始位
-     * */
-    private const val MASK_VR_SERIAL_PORT_DATA_HEAD_START = 0
-
-    /*
-    * 包头结束位
-    * */
-    private const val MASK_VR_SERIAL_PORT_DATA_HEAD_END = MASK_VR_SERIAL_PORT_DATA_HEAD_START + 2
-
-    /**
-     * 数据总长度位
-     * */
-    private const val MASK_VR_SERIAL_PORT_DATA_LENGTH = MASK_VR_SERIAL_PORT_DATA_HEAD_END + 1
-
-
-    /**
-     * 心率数据
-     * */
-    private const val MASK_VR_SERIAL_PORT_DATA_HR = MASK_VR_SERIAL_PORT_DATA_LENGTH + 1
-
-
-    /**
-     * 脱落检测数据
-     * */
-    private const val MASK_VR_SERIAL_PORT_DATA_CHECK_CONTACT = MASK_VR_SERIAL_PORT_DATA_HR + 1
-
-    /**
-     * 数据位开头
-     * */
-    private const val MASK_VR_SERIAL_PORT_DATA_START = MASK_VR_SERIAL_PORT_DATA_CHECK_CONTACT + 1
-
-    /**
-     * 数据位末尾
-     * */
-    private const val MASK_VR_SERIAL_PORT_DATA_END =
-        MASK_VR_SERIAL_PORT_DATA_START + 2 + (DATA_COUNT - 1) * 3
-
-    /**
-     * 校验位
-     * */
-    private const val MASK_VR_SERIAL_PORT_DATA_CHECK = MASK_VR_SERIAL_PORT_DATA_END + 1
-
-    /**
-     * 包尾起始位
-     * */
-    private const val MASK_VR_SERIAL_PORT_DATA_TAIL_START =
-        MASK_VR_SERIAL_PORT_DATA_CHECK + 1
-
-    /**
-     * 包尾结束位
-     * */
-    private const val MASK_VR_SERIAL_PORT_DATA_TAIL_END = MASK_VR_SERIAL_PORT_DATA_TAIL_START + 2
-
     private var mask = MASK_DEFAULT
 
 
     private var data = ByteArray(DATA_COUNT * 3)
+
+    var mIDataAdapter: IDataAdapter<ByteArray>? = AppendDataAdapter()
 
     /**
      * 先检验前3个是否是包头 3
@@ -147,12 +161,12 @@ object ProcessDataTools {
      * 在当前方法帧中，byteInt所在的位置要早与mask标记的位置，也就是byteInt先入帧，然后mask被赋予byteInt所在的位置
      * 目前设定：心率&脱落标志与整体数据结构无关
      * */
-    fun process(
+    override fun process(
         byteInt: Byte,
         contactListeners: List<((Int) -> Unit)?>,
         bioAndAffectDataListeners: List<((ByteArray) -> Unit)?>,
         heartRateListeners: List<((Int) -> Unit)>?,
-        finish: (() -> Unit)? = null
+        finish: (() -> Unit)?
     ) {
         if (byteInt == vrSerialPortDataPckHeadByte) {
             if (!start) {
@@ -224,8 +238,10 @@ object ProcessDataTools {
                 }
                 if (mask == MASK_VR_SERIAL_PORT_DATA_TAIL_END) {
                     finish?.invoke()
-                    bioAndAffectDataListeners.forEach {
-                        it?.invoke(data)
+                    mIDataAdapter?.dataAdapter(data){newData->
+                        bioAndAffectDataListeners.forEach {
+                            it?.invoke(newData)
+                        }
                     }
                     reset()
                 }

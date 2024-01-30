@@ -1,6 +1,7 @@
 package cn.entertech.communication.api
 
 import android.content.Context
+import cn.entertech.communication.ProcessDataTools
 import cn.entertech.communication.bean.ExternalDeviceType
 import java.util.ServiceLoader
 //import java.util.ServiceLoader
@@ -22,6 +23,8 @@ abstract class BaseExternalDeviceCommunicationManage {
 
 
     protected var externalDevice: IExternalDevice? = null
+
+    var mIProcessDataHelper: IProcessDataHelper? = ProcessDataTools()
 
     /**
      * 获取当前设备连接状态
