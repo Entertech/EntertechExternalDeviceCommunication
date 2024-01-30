@@ -37,7 +37,7 @@ android {
 
 dependencies {
 //    implementation fileTree(dir:"libs',include: ['*.jar','*.aar'])
-//    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.9.0")
