@@ -49,6 +49,8 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         enterAffectiveSDKManager = EnterAffectiveSDKManager.getInstance(applicationContext)
         enterAffectiveSDKManager?.addEEGRealtimeListener {
             showMsg("实时脑电数据：${it}")
+            showMsg("实时睡眠：relaxation ${it.relaxation} ")
+            showMsg("实时睡眠：sleepDegree ${it.sleepDegree} sleepState ${it.sleepState}")
         }
         enterAffectiveSDKManager?.addHrRealtimeListener {
             showMsg("实时心率数据：${it}")
