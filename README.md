@@ -4,7 +4,7 @@
 
 #### 本地依赖
 
-将Demo中app/libs目录下的device\_communicate\_serialport-0.0.2.aar文件
+将Demo中app/libs目录下的device\_communicate\_serialport-0.0.4.aar文件
 
 #### gradle自动依赖
 
@@ -18,7 +18,7 @@ repositories {
 
 在所需的module中的build.gradle文件下添加以下依赖：
 
-    implementation 'cn.entertech.android:device_communicate_serialport:0.0.2'
+    implementation 'cn.entertech.android:device_communicate_serialport:0.0.4'
 
 ### 外设-串口管理类
 
@@ -381,3 +381,61 @@ ExternalDeviceCommunicateLog.printer=object :ILogPrinter{
         }
     }
 
+##### **数据校验接口IProcessDataHelper**
+
+```kotlin
+interface IProcessDataHelper {
+
+    /**
+     * @param byteInt 读取出来的字节
+     * @param contactListeners 佩戴监听 is [BaseExternalDeviceCommunicationManage.contactListeners]
+     * @param bioAndAffectDataListeners 生物基础数据&情感数据监听 is [BaseExternalDeviceCommunicationManage.bioAndAffectDataListeners]
+     * @param heartRateListeners 心率监听 is [BaseExternalDeviceCommunicationManage.heartRateListeners]
+     * @param finish 拿到完整的数据包结构时候的回调
+     * */
+    fun process(
+        byteInt: Byte,
+        contactListeners: List<((Int) -> Unit)?>,
+        bioAndAffectDataListeners: List<((ByteArray) -> Unit)?>,
+        heartRateListeners: List<((Int) -> Unit)>?,
+        finish: (() -> Unit)? = null
+    )
+}
+
+```
+
+默认为ProcessDataTools，若需要自定义校验规则 获取到BaseExternalDeviceCommunicationManage时就应该设置
+```kotlin
+BaseExternalDeviceCommunicationManage.mIProcessDataHelper = MyProcessDataHelper()
+
+```
+
+##### **数据适配器接口IDataAdapter**
+仅适用于ProcessDataTools中
+```kotlin
+
+
+interface IDataAdapter<T> {
+
+    fun dataAdapter(originData: T, newDataCallback: (T) -> Unit)
+}
+
+
+```
+**参数说明**
+
+| 参数                     | 类型              | 说明     |
+| ---------------------- | --------------- | ------ |
+| originData | T | 源数据，即 从ProcessDataTools中 获取到的一个完整数据包|
+| newDataCallback | T | 新数据，经过处理后的新的完整数据包|
+
+该接口用途：从串口获取到的源数据转化为所使用的算法所支持数据包，
+若需要自定义数据适配 则可以这么设置
+```kotlin
+    val helper = BaseExternalDeviceCommunicationManage.mIProcessDataHelper
+    
+    if ( helper is ProcessDataTools ) {
+        helper.mIDataAdapter = MyDataAdapter
+    }
+
+```
