@@ -13,6 +13,7 @@ import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
 import cn.entertech.communication.bean.ExternalDeviceType
 import cn.entertech.communication.log.ExternalDeviceCommunicateLog
 import com.google.auto.service.AutoService
+import kotlin.concurrent.thread
 
 @AutoService(BaseExternalDeviceCommunicationManage::class)
 class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
@@ -119,7 +120,7 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
             ) ?: -5
             when (result) {
                 0 -> {
-                    isConnected=true
+                    isConnected = true
                     connectSuccess?.invoke()
                     connectListeners.forEach {
                         it.invoke()
@@ -148,7 +149,7 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
                                         lastBioAffectDataTime = System.currentTimeMillis()
                                     }
                                 }
-                            }else{
+                            } else {
                                 ExternalDeviceCommunicateLog.d(
                                     TAG, "listener is empty"
                                 )
@@ -205,10 +206,21 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
     override fun startHeartAndBrainCollection() {
         runCheckValidData()
-        normalSerial?.sendHex("01")
-        normalSerial?.sendHex("01")
-        normalSerial?.sendHex("01")
-        normalSerial?.sendHex("01")
+        try {
+            thread {
+                normalSerial?.sendHex("01")
+                Thread.sleep(10)
+                normalSerial?.sendHex("01")
+                Thread.sleep(10)
+                normalSerial?.sendHex("01")
+                Thread.sleep(10)
+                normalSerial?.sendHex("01")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+
     }
 
 
@@ -222,7 +234,17 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
     override fun stopHeartAndBrainCollection() {
         mainHandler.removeCallbacksAndMessages(null)
-        normalSerial?.sendHex("02")
+        try {
+            thread {
+                normalSerial?.sendHex("02")
+                Thread.sleep(10)
+                normalSerial?.sendHex("02")
+                Thread.sleep(10)
+                normalSerial?.sendHex("02")
+            }
+        }catch (e:Exception){
+            e.printStackTrace()
+        }
     }
 
     override fun getType() = ExternalDeviceType.SERIAL_PORT
