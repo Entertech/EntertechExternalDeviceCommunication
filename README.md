@@ -161,7 +161,19 @@ manage?.removeConnectListener(connectListener)
 | 3字节            | 1字节  | 1字节          | 1字节                | 3个字节       | 3个字节       | 3个字节       | 3字节        | ........ | 3个字节     | 3个字节     | 1字节          | 3字节            |
 | 0xBB-0xBB-0xBB | 0x28 | 0x00(心率数据为0) | 0x00(0为佩戴正常，非0为脱落) | 00-01-02   | 03-04-05   | 06-07-08   | 09-0A-0B   | ........ | 00-01-02 | 00-01-02 | 0x77         | 0xEE-0xEE-0xEE |
 
-#### 添加原始脑波监听
+### 移除原始数据监听
+
+**方法说明**
+
+如果不想受到原始数据，移除监听即可
+
+**示例代码**
+
+```kotlin
+manage?.removeRawDataListener(rawDataListener)
+```
+
+### 添加脑波数据监听
 
 **方法说明**
 
@@ -173,7 +185,7 @@ manage?.removeConnectListener(connectListener)
   var bioAndAffectDataListeners = fun(data: ByteArray) {
     Logger.d(Arrays.toString(data))
 }
-manage?.addBioAndAffectDataListener(rawDataListener)
+manage?.addBioAndAffectDataListener(bioAndAffectDataListeners)
 ```
 
 **参数说明**
@@ -182,20 +194,20 @@ manage?.addBioAndAffectDataListener(rawDataListener)
 |--------------------------|-------------------|--------|
 | bioAndAffectDataListener | （ByteArray）->Unit | 原始脑波回调 |
 
-> **原始脑波数据说明**
+> **脑波数据说明**
 >
-> 从脑波回调中返回的原始脑波数据是一个长度为30的字节数组，其中脑波数据分左右两个通道，
-> 依次为：左通道、左通道、左通道、右通道、右通道、右通道、左通道、左通道、左通道、右通道、右通道、右通道、左通道、左通道、左通道、右通道、右通道、右通道。。。。
+> 从脑波回调中返回的原始脑波数据是一个长度为20的字节数组，其中脑波数据分左右两个通道，
+> 依次为：包序号、包序号、左通道、左通道、左通道、右通道、右通道、右通道、左通道、左通道、左通道、右通道、右通道、右通道、左通道、左通道、左通道、右通道、右通道、右通道。。。。
 >
 > **正常数据示例**
 >
-> \[0, -94, 21, -36, 125, 21, -12, -75, 22, 8, 61, 22, 10, -72, 22, 15, -19,20,10,8]
+> \[0, 94, 21, -36, 125, 21, -12, -75, 22, 8, 61, 22, 10, -72, 22, 15, -19,20,10,8]
 >
 > **异常数据示例（未检测到脑波数据）**
 >
-> \[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-1,-1,-1]
+> \[0, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-1,-1,-1]
 
-#### 移除原始脑波监听
+### 移除原始脑波监听
 
 **方法说明**
 
@@ -204,16 +216,16 @@ manage?.addBioAndAffectDataListener(rawDataListener)
 **示例代码**
 
 ```kotlin
-manage?.removeRawDataListener(rawDataListener)
+manage?.removeBioAndAffectDataListener(bioAndAffectDataListeners)
 ```
 
 **参数说明**
 
-| 参数              | 类型                | 说明     |
-|-----------------|-------------------|--------|
-| rawDataListener | （ByteArray）->Unit | 原始脑波回调 |
+| 参数                        | 类型                | 说明     |
+|---------------------------|-------------------|--------|
+| bioAndAffectDataListeners | （ByteArray）->Unit | 脑波数据回调 |
 
-#### 添加心率监听
+### 添加心率监听
 
 **方法说明**
 
@@ -234,7 +246,7 @@ manage?.addHeartRateListener(heartRateListener)
 |-------------------|-------------|----------|
 | heartRateListener | （Int）->Unit | 心率数据获取回调 |
 
-#### 移除心率监听
+### 移除心率监听
 
 **方法说明**
 
@@ -252,7 +264,7 @@ manage?.removeHeartRateListener(heartRateListener)
 |-------------------|-------------|--------|
 | heartRateListener | （Int）->Unit | 心率数据回调 |
 
-#### 添加佩戴信号监听
+### 添加佩戴信号监听
 
 **方法说明**
 
@@ -274,7 +286,7 @@ manage?.addContactListener(contactListener)
 |-----------------|-------------|-------------------------|
 | contactListener | （Int）->Unit | 佩戴信号回调。0:接触良好，其他值：未正常佩戴 |
 
-#### 移除佩戴信号监听
+### 移除佩戴信号监听
 
 **方法说明**
 
@@ -298,7 +310,7 @@ manage?.removeContactListener(contactListener)
 |------------------------|-----------------|--------|
 | batteryVoltageListener | （Double）-> Unit | 电池电压回调 |
 
-#### 开始脑波和心率数据同时采集
+### 开始脑波和心率数据同时采集
 
 **方法说明**
 
@@ -310,7 +322,7 @@ manage?.removeContactListener(contactListener)
 manage?.startHeartAndBrainCollection()
 ```
 
-#### 停止脑波和心率数据采集
+### 停止脑波和心率数据采集
 
 **方法说明**
 
@@ -322,21 +334,20 @@ manage?.startHeartAndBrainCollection()
 manage?.stopHeartAndBrainCollection()
 ```
 
-#### 流程图
+### 流程图
 
 ```mermaid
 graph LR
 
-下发接受指令-->移除监听
 断开连接-->移除监听
-获取外部设备通讯服务-->设置监听
-初始化设备-->设置监听
-连接设备-->设置监听
+获取外部设备通讯服务-.->设置监听
+初始化设备-.->设置监听
+连接设备-.->设置监听
 获取外部设备通讯服务-->
 初始化设备-->
 连接设备-->
-下发接受指令-->
-下发停止接受指令-->
+下发接收指令-->
+下发停止接收指令-->
 断开连接
 
 
@@ -361,7 +372,7 @@ ExternalDeviceCommunicateLog.printer = object : ILogPrinter {
 }
 ```
 
-内部默认使用DefaultLogPrinter
+~~内部默认使用DefaultLogPrinter~~，业务可以使用默认，sdk内部不使用
 
     object DefaultLogPrinter:ILogPrinter {
         override fun d(tag: String, msg: String) {
@@ -400,10 +411,15 @@ interface IProcessDataHelper {
 
 ```
 
-默认为ProcessDataTools，若需要自定义校验规则 获取到BaseExternalDeviceCommunicationManage时就应该设置
+默认为ProcessDataTools
+该类的作用：从串口读出的数据，整合成一个以40个字节的数据包（rawListener[40字节]
+），从这个40字节数据包中获取心率（heartRateListeners[1字节]
+），佩戴状态（contactListeners1字节），脑波数据（bioAndAffectDataListeners[30字节]）
+
+若需要自定义校验规则 获取到BaseExternalDeviceCommunicationManage时就应该设置
 
 ```kotlin
-BaseExternalDeviceCommunicationManage.mIProcessDataHelper = MyProcessDataHelper()
+BaseExternalDeviceCommunicationManage.mIProcessDataHelper = YouProcessDataHelper()
 
 ```
 
@@ -424,16 +440,16 @@ interface IDataAdapter<T> {
 
 **参数说明**
 
-| 参数              | 类型  | 说明                                   |
-|-----------------|-----|--------------------------------------|
-| originData      | T   | 源数据，即 从ProcessDataTools中 获取到的一个完整数据包 |
-| newDataCallback | T   | 新数据，经过处理后的新的完整数据包                    |
+| 参数 | 类型 | 说明 |
+| --------------- | -- | ------------------------------------ |
+| originData | T | 源数据，即 从ProcessDataTools中 获取到的一个完整数据包 |
+| newDataCallback | T | 新数据，经过处理后的新的完整数据包 |
 
 该接口用途：从串口获取到的源数据转化为所使用的算法所支持数据包，
 若需要自定义数据适配 则可以这么设置
 
 ```kotlin
-    val helper = BaseExternalDeviceCommunicationManage.mIProcessDataHelper
+val helper = BaseExternalDeviceCommunicationManage.mIProcessDataHelper
 
 if (helper is ProcessDataTools) {
     helper.mIDataAdapter = MyDataAdapter
