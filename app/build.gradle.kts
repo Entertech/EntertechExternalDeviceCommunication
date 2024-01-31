@@ -45,8 +45,8 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    implementation(project(mapOf("path" to ":entertech_communication_serial_port")))
+//    implementation(project(mapOf("path" to ":entertech_communication_serial_port")))
     implementation(project(mapOf("path" to ":entertech_communication_usb")))
     implementation(project(mapOf("path" to ":entertech_communication_api")))
-//    implementation ("cn.entertech.android:device_communicate_serialport:0.0.1")
+    implementation ("cn.entertech.android:device_communicate_serialport:0.0.4")
 }
