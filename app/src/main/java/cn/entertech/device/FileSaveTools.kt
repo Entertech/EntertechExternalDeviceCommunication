@@ -14,7 +14,6 @@ class FileSaveTools {
     }
     private var printWriter: PrintWriter? = null
     private var file: File? = null
-    private var index = 0
     private var isFirst = true
 //    val stringBuild1 = StringBuilder()
 //    val stringBuild2 = StringBuilder()
@@ -28,37 +27,29 @@ class FileSaveTools {
 //            val dataHex = Integer.toHexString(byte.toInt() and 0xff)
             val dataHex = byte.toInt() and 0xff
 //            stringBuild1.append(dataHex).append(", ")
-            if (index % 20 == 0) {
-                if (isFirst) {
+            if (isFirst) {
 //                    stringBuild2.append("0, ")
-                    printWriter?.print("0, ")
-                    isFirst = false
-                } else {
+                printWriter?.print(dataHex)
+                isFirst = false
+            } else {
 //                    stringBuild2.append("0, ")
-                    printWriter?.append("0, ")
-                }
-                ++index
-//                stringBuild2.append("0, ")
-                printWriter?.append("0, ")
-                ++index
+                printWriter?.append(dataHex.toString())
             }
+//                stringBuild2.append("0, ")
 //            stringBuild2.append(dataHex.toString())
 //            stringBuild2.append(", ")
-            printWriter?.append(dataHex.toString())
             printWriter?.append(", ")
-            ++index
-        }
-        printWriter?.flush()
+            printWriter?.flush()
 //        Log.d("FileSaveTools ", "stringBuild1: ${stringBuild1}, ")
 //        Log.d("FileSaveTools ", "stringBuild2: ${stringBuild2}, ")
+        }
     }
 
     fun finishAppendData() {
         file = null
         printWriter?.flush()
         printWriter = null
-        index = 0
-        isFirst = false
+        isFirst = true
     }
 
     private fun createFile(context: Context) {
@@ -78,13 +69,13 @@ class FileSaveTools {
     }
 
     private fun getSaveFileDirectory(context: Context): File {
-     /*   val files = getExternalFilesDirs(context, Environment.MEDIA_MOUNTED)
-        val fileSize = files.size
-        val file = if (files.isNotEmpty()) {
-            files[fileSize - 1]
-        } else {
-            context.getExternalFilesDir("") ?: context.filesDir
-        }*/
+        /*   val files = getExternalFilesDirs(context, Environment.MEDIA_MOUNTED)
+           val fileSize = files.size
+           val file = if (files.isNotEmpty()) {
+               files[fileSize - 1]
+           } else {
+               context.getExternalFilesDir("") ?: context.filesDir
+           }*/
         return File(
             context.getExternalFilesDir("") ?: context.filesDir,
             "serialPortData"

@@ -25,7 +25,7 @@ class UsbCommunicationManage : BaseExternalDeviceCommunicationManage() {
             }
         }, connectFail) { byteArray ->
             byteArray.forEach {
-                ProcessDataTools.process(
+                mIProcessDataHelper?.process(
                     it, contactListeners,
                     bioAndAffectDataListeners,
                     heartRateListeners

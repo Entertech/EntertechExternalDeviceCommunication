@@ -1,10 +1,11 @@
 package cn.entertech.device
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.View.OnClickListener
@@ -13,14 +14,12 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import cn.entertech.affectivesdk.manager.EnterAffectiveSDKManager
 import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
 import cn.entertech.communication.bean.ExternalDeviceType
-import java.io.File
-import java.io.PrintWriter
-import java.text.SimpleDateFormat
-import java.util.ArrayList
-import java.util.Date
-import kotlin.concurrent.thread
+import cn.entertech.communication.log.DefaultLogPrinter
+import cn.entertech.communication.log.ExternalDeviceCommunicateLog
+import java.util.Arrays
 
 class MainActivity : AppCompatActivity(), OnClickListener {
     private lateinit var connect: Button
@@ -30,7 +29,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
     private lateinit var tvMsg: TextView
     private lateinit var scrollViewLogs: ScrollView
     private var manage: BaseExternalDeviceCommunicationManage? = null
-
+    private var enterAffectiveSDKManager: EnterAffectiveSDKManager? = null
     private var mFileSaveTools: FileSaveTools? = null
     private val disconnectListener:(String)->Unit by lazy {
         {
@@ -38,6 +37,9 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         }
     }
 
+    private val handler: Handler by lazy {
+        Handler(Looper.getMainLooper())
+    }
     private val connectListener:(String)->Unit by lazy {
         {
 
@@ -48,9 +50,58 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         private const val TAG = "MainActivity"
     }
 
+/*    private val end: Runnable = Runnable {
+        manage?.apply {
+            if (isConnected) {
+                stopHeartAndBrainCollection()
+                val report = enterAffectiveSDKManager?.finish()
+                runOnUiThread {
+                    showMsg("report: $report")
+                }
+            } else {
+                showMsg("设备未连接")
+            }
+            handler?.postDelayed(start, 1000)
+        }
+    }
+
+    private val start: Runnable = Runnable {
+        ExternalDeviceCommunicateLog.d(TAG,"start $manage")
+        manage?.apply {
+            if (isConnected) {
+                startHeartAndBrainCollection()
+            } else {
+                showMsg("设备未连接")
+            }
+            Thread.sleep(1000 * 60 * 5)
+            if (isConnected) {
+                stopHeartAndBrainCollection()
+                val report = enterAffectiveSDKManager?.finish()
+                runOnUiThread {
+                    showMsg("report: $report")
+                }
+            } else {
+                showMsg("设备未连接")
+            }
+            handler?.postDelayed(end, 1000 * 2)
+        }
+    }*/
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        ExternalDeviceCommunicateLog.printer = DefaultLogPrinter
+        enterAffectiveSDKManager = EnterAffectiveSDKManager.getInstance(applicationContext)
+        enterAffectiveSDKManager?.init()
+        enterAffectiveSDKManager?.addEEGRealtimeListener {
+//            showMsg("实时脑电数据：${it}")
+            showMsg("实时睡眠：relaxation ${it.relaxation} ")
+            showMsg("实时睡眠：sleepDegree ${it.sleepDegree} sleepState ${it.sleepState}")
+        }
+        enterAffectiveSDKManager?.addHrRealtimeListener {
+            showMsg("实时心率数据：${it}")
+        }
         connect = findViewById(R.id.connect)
         scrollViewLogs = findViewById(R.id.scrollView_logs)
         disconnect = findViewById(R.id.disconnect)
@@ -75,41 +126,39 @@ class MainActivity : AppCompatActivity(), OnClickListener {
 
         manage?.addHeartRateListener {
             showMsg("hr it $it")
+            if (enterAffectiveSDKManager?.isInited() == true) {
+                enterAffectiveSDKManager?.appendHR(it)
+            } else {
+                Log.e(TAG, "enterAffectiveSDKManager is not init")
+            }
         }
         manage?.addConnectListener(connectListener)
         manage?.addDisConnectListener(disconnectListener)
 
         manage?.addBioAndAffectDataListener {
-            val sb = StringBuilder()
             mFileSaveTools?.appendData(this, it)
-            showMsg("BioAndAffectData $sb")
+            showMsg("BioAndAffectData ${Arrays.toString(it)}")
+            if (enterAffectiveSDKManager?.isInited() == true) {
+                enterAffectiveSDKManager?.appendEEG(it)
+            } else {
+                Log.e(TAG, "enterAffectiveSDKManager is not init")
+            }
         }
-        /*  manage?.connectDevice(this, {
-              showMsg("connectDevice success")
-              manage?.startHeartAndBrainCollection()
-          }) { errorCode, errorMsg ->
-              showMsg("errorCode: $errorCode  errorMsg: $errorMsg")
-          }*/
-        /* thread {
-             Thread.sleep(3000 )
-             runOnUiThread {
-                 manage?.connectDevice(this, {
-                     showMsg( "connectDevice success")
-                     manage?.startHeartAndBrainCollection()
-                 }) { errorCode, errorMsg ->
-                     showMsg( "errorCode: $errorCode  errorMsg: $errorMsg")
-                 }
-             }
 
-         }*/
-
-        /*    thread {
-                Thread.sleep(1000 * 60 * 30)
-                printWriter?.close()
-                showMsg("stopHeartAndBrainCollection")
-                manage?.stopHeartAndBrainCollection()
-            }*/
+  /*      manage?.connectDevice(this, {
+            showMsg("connectDevice success")
+        }) { errorCode, errorMsg ->
+            showMsg("errorCode: $errorCode  errorMsg: $errorMsg")
+        }*/
+//        auto()
     }
+
+    private fun auto() {
+       /* handler.postDelayed(
+            start
+        , 1000)*/
+    }
+
 
     private var screenText: String = ""
     private fun showMsg(msg: String) {
@@ -196,11 +245,13 @@ class MainActivity : AppCompatActivity(), OnClickListener {
             R.id.endListener -> {
                 manage?.apply {
                     if (isConnected) {
+                        mFileSaveTools?.finishAppendData()
                         stopHeartAndBrainCollection()
                     } else {
                         showMsg("设备未连接")
                     }
                 }
+//                enterAffectiveSDKManager?.release()
             }
 
         }
