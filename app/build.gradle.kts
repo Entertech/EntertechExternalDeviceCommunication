@@ -48,5 +48,5 @@ dependencies {
 //    implementation(project(mapOf("path" to ":entertech_communication_serial_port")))
     implementation(project(mapOf("path" to ":entertech_communication_usb")))
     implementation(project(mapOf("path" to ":entertech_communication_api")))
-    implementation ("cn.entertech.android:device_communicate_serialport:0.0.4")
+//    implementation ("cn.entertech.android:device_communicate_serialport:0.0.4")
 }
