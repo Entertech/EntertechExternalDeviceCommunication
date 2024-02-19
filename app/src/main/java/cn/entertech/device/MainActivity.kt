@@ -41,42 +41,42 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         private const val TAG = "MainActivity"
     }
 
-/*    private val end: Runnable = Runnable {
-        manage?.apply {
-            if (isConnected) {
-                stopHeartAndBrainCollection()
-                val report = enterAffectiveSDKManager?.finish()
-                runOnUiThread {
-                    showMsg("report: $report")
+    /*    private val end: Runnable = Runnable {
+            manage?.apply {
+                if (isConnected) {
+                    stopHeartAndBrainCollection()
+                    val report = enterAffectiveSDKManager?.finish()
+                    runOnUiThread {
+                        showMsg("report: $report")
+                    }
+                } else {
+                    showMsg("设备未连接")
                 }
-            } else {
-                showMsg("设备未连接")
+                handler?.postDelayed(start, 1000)
             }
-            handler?.postDelayed(start, 1000)
         }
-    }
 
-    private val start: Runnable = Runnable {
-        ExternalDeviceCommunicateLog.d(TAG,"start $manage")
-        manage?.apply {
-            if (isConnected) {
-                startHeartAndBrainCollection()
-            } else {
-                showMsg("设备未连接")
-            }
-            Thread.sleep(1000 * 60 * 5)
-            if (isConnected) {
-                stopHeartAndBrainCollection()
-                val report = enterAffectiveSDKManager?.finish()
-                runOnUiThread {
-                    showMsg("report: $report")
+        private val start: Runnable = Runnable {
+            ExternalDeviceCommunicateLog.d(TAG,"start $manage")
+            manage?.apply {
+                if (isConnected) {
+                    startHeartAndBrainCollection()
+                } else {
+                    showMsg("设备未连接")
                 }
-            } else {
-                showMsg("设备未连接")
+                Thread.sleep(1000 * 60 * 5)
+                if (isConnected) {
+                    stopHeartAndBrainCollection()
+                    val report = enterAffectiveSDKManager?.finish()
+                    runOnUiThread {
+                        showMsg("report: $report")
+                    }
+                } else {
+                    showMsg("设备未连接")
+                }
+                handler?.postDelayed(end, 1000 * 2)
             }
-            handler?.postDelayed(end, 1000 * 2)
-        }
-    }*/
+        }*/
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -134,18 +134,18 @@ class MainActivity : AppCompatActivity(), OnClickListener {
             }
         }
 
-  /*      manage?.connectDevice(this, {
-            showMsg("connectDevice success")
-        }) { errorCode, errorMsg ->
-            showMsg("errorCode: $errorCode  errorMsg: $errorMsg")
-        }*/
+        /*      manage?.connectDevice(this, {
+                  showMsg("connectDevice success")
+              }) { errorCode, errorMsg ->
+                  showMsg("errorCode: $errorCode  errorMsg: $errorMsg")
+              }*/
 //        auto()
     }
 
     private fun auto() {
-       /* handler.postDelayed(
-            start
-        , 1000)*/
+        /* handler.postDelayed(
+             start
+         , 1000)*/
     }
 
 
@@ -241,14 +241,14 @@ class MainActivity : AppCompatActivity(), OnClickListener {
                         showMsg("设备未连接")
                     }
                 }
-            /*    thread {
-                    val report = enterAffectiveSDKManager?.finish()
-                    Thread.sleep(3000)
-                    enterAffectiveSDKManager?.release()
-                    runOnUiThread {
-                        showMsg("report: $report")
-                    }
-                }*/
+                /*    thread {
+                        val report = enterAffectiveSDKManager?.finish()
+                        Thread.sleep(3000)
+                        enterAffectiveSDKManager?.release()
+                        runOnUiThread {
+                            showMsg("report: $report")
+                        }
+                    }*/
             }
 
         }
