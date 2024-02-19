@@ -16,7 +16,7 @@ interface IExternalDevice {
 
     fun disConnect()
 
-    fun write(byteArray: ByteArray)
+    fun write(byteArray: ByteArray, callback: ICallback<Unit, String>? = null)
 
     fun read(byteArray: ByteArray): Int
 

@@ -2,10 +2,14 @@ package cn.entertech.serialport;
 
 import android.text.TextUtils;
 
+import androidx.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.entertech.communication.api.ICallback;
 import cn.entertech.communication.log.ExternalDeviceCommunicateLog;
+import kotlin.Unit;
 
 /**
  * @author Vi
@@ -145,9 +149,27 @@ public class NormalSerial {
      *
      * @param hexData
      */
-    public void sendHex(String hexData) {
+    public void sendHex(String hexData, @Nullable ICallback<Unit, String> callback) {
         if (isOpen()) {
-            mBaseSerial.sendHex(hexData);
+            try {
+                mBaseSerial.sendHex(hexData);
+                if (callback != null) {
+                    callback.success(Unit.INSTANCE);
+                }
+            } catch (Exception e) {
+                if (callback != null) {
+                    if (e != null) {
+                        callback.fail(e.getMessage());
+                    } else {
+                        callback.fail("");
+                    }
+
+                }
+            }
+        } else {
+            if (callback != null) {
+                callback.fail("serial is not open");
+            }
         }
     }
 

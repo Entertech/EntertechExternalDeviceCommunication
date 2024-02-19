@@ -190,7 +190,7 @@ abstract class BaseExternalDeviceCommunicationManage {
      * 开始脑波数据采集
      * 调用这个接口开始采集脑波数据
      * */
-    fun startBrainCollection() {
+    fun startBrainCollection(callback: ICallback<Unit, String>) {
 
     }
 
@@ -199,7 +199,7 @@ abstract class BaseExternalDeviceCommunicationManage {
      * 停止脑波数据采集
      * 停止采集，调用该方法停止采集脑波数据
      * */
-    fun stopBrainCollection() {
+    fun stopBrainCollection(callback: ICallback<Unit, String>) {
 
     }
 
@@ -207,25 +207,37 @@ abstract class BaseExternalDeviceCommunicationManage {
      * 开始心率数据采集
      * 调用这个接口开始采集心率数据
      * */
-    fun startHeartRateCollection() {
+    fun startHeartRateCollection(callback: ICallback<Unit, String>) {
 
     }
 
-    fun stopHeartRateCollection() {
+    fun stopHeartRateCollection(callback: ICallback<Unit, String>) {
 
     }
 
     /**
      * 开始脑波和心率数据同时采集
      * */
+    @Deprecated("")
     abstract fun startHeartAndBrainCollection()
+
+    /**
+     * 开始脑波和心率数据同时采集
+     * */
+    abstract fun startHeartAndBrainCollection(callback: ICallback<Unit, String>)
 
     /**
      * 停止脑波和心率数据采集
      * */
+    @Deprecated("")
     abstract fun stopHeartAndBrainCollection()
 
-    abstract fun sendCommand(command:String)
+    /**
+     * 停止脑波和心率数据采集
+     * */
+    abstract fun stopHeartAndBrainCollection(callback: ICallback<Unit, String>)
+
+    abstract fun sendCommand(command:String,callback:ICallback<Unit,String>)
 
     abstract fun getType(): ExternalDeviceType
 }

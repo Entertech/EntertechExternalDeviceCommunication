@@ -8,8 +8,8 @@ import android.os.Handler
 import android.os.Looper
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
-import cn.entertech.communication.ProcessDataTools
 import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
+import cn.entertech.communication.api.ICallback
 import cn.entertech.communication.bean.ExternalDeviceType
 import cn.entertech.communication.log.ExternalDeviceCommunicateLog
 import com.google.auto.service.AutoService
@@ -208,13 +208,13 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
         runCheckValidData()
         try {
             thread {
-                normalSerial?.sendHex("01")
+                normalSerial?.sendHex("01", null)
                 Thread.sleep(10)
-                normalSerial?.sendHex("01")
+                normalSerial?.sendHex("01", null)
                 Thread.sleep(10)
-                normalSerial?.sendHex("01")
+                normalSerial?.sendHex("01", null)
                 Thread.sleep(10)
-                normalSerial?.sendHex("01")
+                normalSerial?.sendHex("01", null)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -223,6 +223,14 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
 
     }
 
+
+    override fun startHeartAndBrainCollection(callback: ICallback<Unit, String>) {
+        startHeartAndBrainCollection()
+    }
+
+    override fun stopHeartAndBrainCollection(callback: ICallback<Unit, String>) {
+        stopHeartAndBrainCollection()
+    }
 
     private fun runCheckValidData() {
         ExternalDeviceCommunicateLog.d(TAG, "runCheckValidData")
@@ -236,19 +244,19 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
         mainHandler.removeCallbacksAndMessages(null)
         try {
             thread {
-                normalSerial?.sendHex("02")
+                normalSerial?.sendHex("02", null)
                 Thread.sleep(10)
-                normalSerial?.sendHex("02")
+                normalSerial?.sendHex("02", null)
                 Thread.sleep(10)
-                normalSerial?.sendHex("02")
+                normalSerial?.sendHex("02", null)
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
-    override fun sendCommand(command: String) {
-        normalSerial?.sendHex(command)
+    override fun sendCommand(command: String, callback: ICallback<Unit, String>) {
+        normalSerial?.sendHex(command, callback)
     }
 
     override fun getType() = ExternalDeviceType.SERIAL_PORT

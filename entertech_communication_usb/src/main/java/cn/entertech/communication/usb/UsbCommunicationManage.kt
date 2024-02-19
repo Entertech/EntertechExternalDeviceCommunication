@@ -1,9 +1,9 @@
 package cn.entertech.communication.usb
 
 import android.content.Context
-import cn.entertech.communication.ProcessDataTools
 import cn.entertech.communication.Tools.hexStringToByteArray
 import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
+import cn.entertech.communication.api.ICallback
 import cn.entertech.communication.bean.ExternalDeviceType
 import com.google.auto.service.AutoService
 
@@ -41,6 +41,14 @@ class UsbCommunicationManage : BaseExternalDeviceCommunicationManage() {
         }
     }
 
+    override fun startHeartAndBrainCollection(callback: ICallback<Unit, String>) {
+        externalDevice?.write(hexStringToByteArray("01"),callback)
+    }
+
+    override fun stopHeartAndBrainCollection(callback: ICallback<Unit, String>) {
+        externalDevice?.write(hexStringToByteArray("02"),callback)
+    }
+
     override fun startHeartAndBrainCollection() {
         externalDevice?.write(hexStringToByteArray("01"))
     }
@@ -49,8 +57,8 @@ class UsbCommunicationManage : BaseExternalDeviceCommunicationManage() {
         externalDevice?.write(hexStringToByteArray("02"))
     }
 
-    override fun sendCommand(command: String) {
-        externalDevice?.write(hexStringToByteArray(command))
+    override fun sendCommand(command: String, callback: ICallback<Unit, String>) {
+        externalDevice?.write(hexStringToByteArray(command),callback)
     }
 
     override fun getType(): ExternalDeviceType {

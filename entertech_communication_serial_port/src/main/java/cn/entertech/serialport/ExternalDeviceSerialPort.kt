@@ -1,6 +1,7 @@
 package cn.entertech.serialport
 
 import android.content.Context
+import cn.entertech.communication.api.ICallback
 import cn.entertech.communication.api.IExternalDevice
 import cn.entertech.communication.bean.ExternalDeviceType
 import cn.entertech.communication.log.ExternalDeviceCommunicateLog
@@ -55,8 +56,8 @@ class ExternalDeviceSerialPort : IExternalDevice {
         NormalSerial.instance().close()
     }
 
-    override fun write(byteArray: ByteArray) {
-        NormalSerial.instance().sendHex(String(byteArray))
+    override fun write(byteArray: ByteArray, callback: ICallback<Unit, String>?) {
+        NormalSerial.instance().sendHex(String(byteArray),callback)
     }
 
     override fun read(byteArray: ByteArray): Int {

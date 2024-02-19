@@ -6,6 +6,7 @@ import android.content.Intent
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Build
+import cn.entertech.communication.api.ICallback
 import cn.entertech.communication.api.IExternalDevice
 import cn.entertech.communication.bean.ExternalDeviceType
 import cn.entertech.communication.log.ExternalDeviceCommunicateLog
@@ -25,17 +26,18 @@ class ExternalDeviceUsb : IExternalDevice {
         private const val TAG = "ExternalDeviceUsb"
     }
 
-    override fun write(byteArray: ByteArray) {
+    override fun write(byteArray: ByteArray,callback: ICallback<Unit, String>?) {
         if (!connected) {
-            ExternalDeviceCommunicateLog.e(TAG, "write error :not connect")
+            callback?.fail("write error :not connect")
             return
         }
         try {
             usbSerialPort?.write(
                 byteArray, WRITE_WAIT_MILLIS
             )
+            callback?.success(Unit)
         } catch (e: java.lang.Exception) {
-            ExternalDeviceCommunicateLog.e(TAG, "write error : ${e.message}")
+            callback?.fail("write error : ${e.message}")
         }
     }
 
