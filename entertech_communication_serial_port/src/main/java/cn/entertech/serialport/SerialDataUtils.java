@@ -74,8 +74,10 @@ public class SerialDataUtils {
      * Hex string to byte array
      */
     public static byte[] HexToByteArr(String inHex) {
+        inHex = removeOx(inHex);
         byte[] result;
         int hexlen = inHex.length();
+        //是否为奇数
         if (isOdd(hexlen) == 1) {
             hexlen++;
             result = new byte[(hexlen / 2)];
@@ -89,6 +91,13 @@ public class SerialDataUtils {
             j++;
         }
         return result;
+    }
+
+    public static String removeOx(String inHex) {
+        if (inHex.startsWith("0x")) {
+            return inHex.substring(2);
+        }
+        return inHex;
     }
 
     /**
