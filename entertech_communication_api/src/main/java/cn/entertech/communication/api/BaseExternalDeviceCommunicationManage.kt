@@ -225,5 +225,7 @@ abstract class BaseExternalDeviceCommunicationManage {
      * */
     abstract fun stopHeartAndBrainCollection()
 
+    abstract fun sendCommand(command:String)
+
     abstract fun getType(): ExternalDeviceType
 }

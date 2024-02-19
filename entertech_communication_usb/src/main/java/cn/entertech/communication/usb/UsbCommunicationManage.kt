@@ -49,6 +49,10 @@ class UsbCommunicationManage : BaseExternalDeviceCommunicationManage() {
         externalDevice?.write(hexStringToByteArray("02"))
     }
 
+    override fun sendCommand(command: String) {
+        externalDevice?.write(hexStringToByteArray(command))
+    }
+
     override fun getType(): ExternalDeviceType {
         return externalDevice?.getExternalDeviceType() ?: ExternalDeviceType.USB
     }

@@ -242,9 +242,13 @@ class SerialPortCommunicationManage : BaseExternalDeviceCommunicationManage() {
                 Thread.sleep(10)
                 normalSerial?.sendHex("02")
             }
-        }catch (e:Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    override fun sendCommand(command: String) {
+        normalSerial?.sendHex(command)
     }
 
     override fun getType() = ExternalDeviceType.SERIAL_PORT
