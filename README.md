@@ -4,7 +4,7 @@
 
 #### 本地依赖
 
-将Demo中app/libs目录下的device\_communicate\_serialport-0.0.4.aar文件
+将Demo中app/libs目录下的device\_communicate\_serialport-0.0.6.aar文件
 
 #### gradle自动依赖
 
@@ -18,7 +18,7 @@ repositories {
 
 在所需的module中的build.gradle文件下添加以下依赖：
 
-    implementation 'cn.entertech.android:device_communicate_serialport:0.0.4'
+    implementation 'cn.entertech.android:device_communicate_serialport:0.0.6'
 
 ### 外设-串口管理类
 
@@ -353,6 +353,18 @@ graph LR
 
 ```
 
+### 发送指令
+
+fun sendCommand(command:String)
+
+指令
+
+| 指令       | 说明          |                                 |
+|----------|-------------|---------------------------------|
+| 0x01(01) | 下发开启脑电和心率指令 | 同startHeartAndBrainCollection方法 |
+| 0x02(02) | 下发关闭脑电和心率指令 | 同stopHeartAndBrainCollection方法  |
+| 0x03(03) | 下发进入固件升级指令  |                                 |
+
 ### 辅助功能
 
 ##### **调式日志**
@@ -414,7 +426,7 @@ interface IProcessDataHelper {
 默认为ProcessDataTools
 该类的作用：从串口读出的数据，整合成一个以40个字节的数据包（rawListener[40字节]
 ），从这个40字节数据包中获取心率（heartRateListeners[1字节]
-），佩戴状态（contactListeners1字节），脑波数据（bioAndAffectDataListeners[30字节]）
+），佩戴状态（contactListeners[1字节]），脑波数据（bioAndAffectDataListeners[30字节]）
 
 若需要自定义校验规则 获取到BaseExternalDeviceCommunicationManage时就应该设置
 
