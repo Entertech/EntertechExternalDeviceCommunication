@@ -8,7 +8,7 @@ plugins {
 /*PublishInfo {
     groupId = "cn.entertech.android" // 库的组织，使用域名表示
     artifactId = "device_communicate_serialport" // 库名称
-    version = "0.0.5" // 库版本
+    version = "0.0.6" // 库版本
 }*/
 
 android {
