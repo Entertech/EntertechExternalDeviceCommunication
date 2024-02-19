@@ -20,9 +20,6 @@ class FileSaveTools {
 
 
     fun appendData(context: Context, data: ByteArray) {
-        if (file == null) {
-            createFile(context)
-        }
         data.forEach { byte ->
 //            val dataHex = Integer.toHexString(byte.toInt() and 0xff)
             val dataHex = byte.toInt() and 0xff
@@ -52,7 +49,7 @@ class FileSaveTools {
         isFirst = true
     }
 
-    private fun createFile(context: Context) {
+    fun createFile(context: Context) {
         file = File(
             getSaveFileDirectory(context),
             sim.format(Date(System.currentTimeMillis())) + ".txt"

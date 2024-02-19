@@ -20,6 +20,7 @@ import cn.entertech.communication.bean.ExternalDeviceType
 import cn.entertech.communication.log.DefaultLogPrinter
 import cn.entertech.communication.log.ExternalDeviceCommunicateLog
 import java.util.Arrays
+import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity(), OnClickListener {
     private lateinit var connect: Button
@@ -223,6 +224,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
                 manage?.apply {
                     if (isConnected) {
                         mFileSaveTools = FileSaveTools()
+                        mFileSaveTools?.createFile(this@MainActivity)
                         startHeartAndBrainCollection()
                     } else {
                         showMsg("设备未连接")
@@ -239,7 +241,14 @@ class MainActivity : AppCompatActivity(), OnClickListener {
                         showMsg("设备未连接")
                     }
                 }
-//                enterAffectiveSDKManager?.release()
+            /*    thread {
+                    val report = enterAffectiveSDKManager?.finish()
+                    Thread.sleep(3000)
+                    enterAffectiveSDKManager?.release()
+                    runOnUiThread {
+                        showMsg("report: $report")
+                    }
+                }*/
             }
 
         }
