@@ -204,6 +204,8 @@ class MainActivity : AppCompatActivity(), OnClickListener {
             }
             ActivityCompat.requestPermissions(this@MainActivity, permissions, 1)
         }
+        //下发进入固件升级指令
+//        manage?.sendCommand("0x03")
     }
 
     override fun onClick(v: View?) {
