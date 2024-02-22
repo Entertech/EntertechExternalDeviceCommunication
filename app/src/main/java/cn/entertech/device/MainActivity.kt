@@ -16,11 +16,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import cn.entertech.affectivesdk.manager.EnterAffectiveSDKManager
 import cn.entertech.communication.api.BaseExternalDeviceCommunicationManage
+import cn.entertech.communication.api.ICallback
 import cn.entertech.communication.bean.ExternalDeviceType
 import cn.entertech.communication.log.DefaultLogPrinter
 import cn.entertech.communication.log.ExternalDeviceCommunicateLog
 import java.util.Arrays
-import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity(), OnClickListener {
     private lateinit var connect: Button
@@ -145,8 +145,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
                   showMsg("errorCode: $errorCode  errorMsg: $errorMsg")
               }*/
 //        auto()
-        //下发进入固件升级指令
-        manage?.sendCommand("0x03")
+
     }
 
     private fun auto() {
@@ -228,7 +227,15 @@ class MainActivity : AppCompatActivity(), OnClickListener {
                 manage?.disConnectDevice()
             }
             R.id.btnSendCommandUpdate->{
-                manage?.sendCommand("03")
+                manage?.sendCommand("03",object :ICallback<Unit,String>{
+                    override fun success(t: Unit) {
+                        showMsg("send 03 success")
+                    }
+
+                    override fun fail(r: String) {
+                        showMsg("send 03 error $r")
+                    }
+                })
             }
 
             R.id.startListener -> {
