@@ -36,6 +36,16 @@
         app:layout_constraintEnd_toStartOf="@id/disconnect"
         tools:ignore="MissingConstraints" />
     <Button
+        android:id="@+id/btnSendCommandUpdate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="下发进入固件升级指令"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintTop_toBottomOf="@id/startListener"
+        app:layout_constraintStart_toStartOf="@id/connect"
+        app:layout_constraintEnd_toStartOf="@id/disconnect"
+        tools:ignore="MissingConstraints" />
+    <Button
         android:id="@+id/endListener"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -49,7 +59,7 @@
         android:id="@+id/scrollView_logs"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/endListener"
+        app:layout_constraintTop_toBottomOf="@id/btnSendCommandUpdate"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:ignore="MissingConstraints">
     <TextView
