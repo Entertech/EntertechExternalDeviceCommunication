@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
     private var manage: BaseExternalDeviceCommunicationManage? = null
     private var enterAffectiveSDKManager: EnterAffectiveSDKManager? = null
     private var mFileSaveTools: FileSaveTools? = null
+    private var mRawFileSaveTools: FileSaveTools? = null
 
     private val handler: Handler by lazy {
         Handler(Looper.getMainLooper())
@@ -109,6 +110,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
             showMsg("manage is nul ")
         }
         manage?.addRawDataListener {
+            mRawFileSaveTools?.appendData(this,it)
             showMsg("RawData ${it.map { byte -> byte.toInt() and 0xff }}")
         }
         manage?.addContactListener {
@@ -226,7 +228,9 @@ class MainActivity : AppCompatActivity(), OnClickListener {
                 manage?.apply {
                     if (isConnected) {
                         mFileSaveTools = FileSaveTools()
+                        mRawFileSaveTools = FileSaveTools()
                         mFileSaveTools?.createFile(this@MainActivity)
+                        mRawFileSaveTools?.createFile(this@MainActivity,"raw")
                         startHeartAndBrainCollection()
                     } else {
                         showMsg("设备未连接")
@@ -238,6 +242,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
                 manage?.apply {
                     if (isConnected) {
                         mFileSaveTools?.finishAppendData()
+                        mRawFileSaveTools?.finishAppendData()
                         stopHeartAndBrainCollection()
                     } else {
                         showMsg("设备未连接")
