@@ -29,9 +29,11 @@ class MainActivity : AppCompatActivity(), OnClickListener {
     private lateinit var endListener: Button
     private lateinit var tvMsg: TextView
     private lateinit var scrollViewLogs: ScrollView
+    private var btnSendCommandUpdate:View?=null
     private var manage: BaseExternalDeviceCommunicationManage? = null
     private var enterAffectiveSDKManager: EnterAffectiveSDKManager? = null
     private var mFileSaveTools: FileSaveTools? = null
+    private var mRawFileSaveTools: FileSaveTools? = null
 
     private val handler: Handler by lazy {
         Handler(Looper.getMainLooper())
@@ -98,8 +100,10 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         disconnect = findViewById(R.id.disconnect)
         startListener = findViewById(R.id.startListener)
         endListener = findViewById(R.id.endListener)
+        btnSendCommandUpdate = findViewById(R.id.btnSendCommandUpdate)
         tvMsg = findViewById(R.id.tvMsg)
         connect.setOnClickListener(this)
+        btnSendCommandUpdate?.setOnClickListener(this)
         disconnect.setOnClickListener(this)
         startListener.setOnClickListener(this)
         endListener.setOnClickListener(this)
@@ -109,6 +113,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
             showMsg("manage is nul ")
         }
         manage?.addRawDataListener {
+            mRawFileSaveTools?.appendData(this,it)
             showMsg("RawData ${it.map { byte -> byte.toInt() and 0xff }}")
         }
         manage?.addContactListener {
@@ -140,6 +145,8 @@ class MainActivity : AppCompatActivity(), OnClickListener {
                   showMsg("errorCode: $errorCode  errorMsg: $errorMsg")
               }*/
 //        auto()
+        //下发进入固件升级指令
+        manage?.sendCommand("0x03")
     }
 
     private fun auto() {
@@ -204,6 +211,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
             }
             ActivityCompat.requestPermissions(this@MainActivity, permissions, 1)
         }
+
     }
 
     override fun onClick(v: View?) {
@@ -219,12 +227,17 @@ class MainActivity : AppCompatActivity(), OnClickListener {
             R.id.disconnect -> {
                 manage?.disConnectDevice()
             }
+            R.id.btnSendCommandUpdate->{
+                manage?.sendCommand("03")
+            }
 
             R.id.startListener -> {
                 manage?.apply {
                     if (isConnected) {
                         mFileSaveTools = FileSaveTools()
+                        mRawFileSaveTools = FileSaveTools()
                         mFileSaveTools?.createFile(this@MainActivity)
+                        mRawFileSaveTools?.createFile(this@MainActivity,"raw")
                         startHeartAndBrainCollection()
                     } else {
                         showMsg("设备未连接")
@@ -236,6 +249,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
                 manage?.apply {
                     if (isConnected) {
                         mFileSaveTools?.finishAppendData()
+                        mRawFileSaveTools?.finishAppendData()
                         stopHeartAndBrainCollection()
                     } else {
                         showMsg("设备未连接")

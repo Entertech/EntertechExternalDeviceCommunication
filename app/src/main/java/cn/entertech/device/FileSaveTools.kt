@@ -43,16 +43,16 @@ class FileSaveTools {
     }
 
     fun finishAppendData() {
-        file = null
         printWriter?.flush()
         printWriter = null
+        file = null
         isFirst = true
     }
 
-    fun createFile(context: Context) {
+    fun createFile(context: Context, fileFlag: String = "") {
         file = File(
             getSaveFileDirectory(context),
-            sim.format(Date(System.currentTimeMillis())) + ".txt"
+            sim.format(Date(System.currentTimeMillis())) + "_" + fileFlag + ".txt"
         )
         file?.apply {
             Log.d("FileSaveTools ", "createFile: ${this.absolutePath}, ")
